@@ -13,7 +13,7 @@ using std::vector;
 using std::to_string;
 
 // counts parentheses
-size_t count_parentheses(const string& expression) 
+size_t count_parentheses(const string& expression) noexcept
 // counts the number of parentheses found in an expression
 // returns the number of parentheses
 {
@@ -28,7 +28,7 @@ size_t count_parentheses(const string& expression)
 }
 
 // checks parentheses
-bool check_parentheses(const string& expression) 
+bool check_parentheses(const string& expression) noexcept
 // returns true if nothing is wrong with the parentheses
 // i.e odd number of parentheses, unclosed parentheses
 {
@@ -48,7 +48,7 @@ bool check_parentheses(const string& expression)
 }
 
 // counts operators
-size_t count_operators(const string& expression) 
+size_t count_operators(const string& expression) noexcept
 // counts the number of operators found in an expression
 // returns the number of operators
 {
@@ -66,7 +66,7 @@ size_t count_operators(const string& expression)
 }
 
 // checks if a char is a representation of a digit
-bool is_a_digit(const char& c) 
+bool is_a_digit(const char& c) noexcept
 // checks if the argument is the representation of a digit [0, 10)
 // returns true if the argument is the representation of a digit
 {
@@ -81,7 +81,7 @@ bool is_a_digit(const char& c)
 }
 
 // checks if an expression is valid
-bool is_valid(const string& expression) 
+bool is_valid(const string& expression) noexcept
 // checks if an expression is valid by using a set of rules
 // i.e. number of parentheses, invalid characters, etc
 // returns true if everything is fine according to these rules
@@ -204,7 +204,7 @@ double calculate(const double& first, const double& second, const char& op)
 }
 
 // clears expression
-void clear_expression(string& expression) 
+void clear_expression(string& expression) noexcept
 // clears expression passed as argument by removing whitespaces, changing 'x' to '*' and ':' unto '/'
 {
 	// remove whitespaces from expression
@@ -226,7 +226,7 @@ void clear_expression(string& expression)
 }
 
 // returns the part of the expression that must be computed first
-string parse_expression(const string& expression) 
+string parse_expression(const string& expression) noexcept
 // parse the expression by analyzing the parentheses and returns the part of the
 // expression that must be computed first
 // if there's no parentheses, the argument expression is returned as is
