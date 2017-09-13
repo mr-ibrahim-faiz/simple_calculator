@@ -55,7 +55,7 @@ size_t count_operators(const string& expression) noexcept
 	size_t result { 0 };
 	for (size_t i = 0; i < expression.size(); ++i) {
 		switch (expression[i]) {
-		case '+': case '-': case '/': case '*':
+		case '+': case '-': case '/': case '*': case '^':
 			++result;
 			break;
 		default:
@@ -139,8 +139,8 @@ bool is_valid(const string& expression) noexcept
 
 		// returns false if two caracters which are not allowed to follow each other follow each others
 		switch (expression[i]) {
-		case '*': case '/': case '+': case '-':
-			// accepts *(, /(, +(, -(, *., /., +., -.
+		case '*': case '/': case '+': case '-': case '^':
+			// accepts *(, /(, +(, -(, *., /., +., -., ^(, ^.
 			// refuses for example *) or *L
 			if (expression[i + 1] == '(');
 			else if (expression[i + 1] == '.');
@@ -160,10 +160,10 @@ bool is_valid(const string& expression) noexcept
 			break;
 
 		case ')': case '.':
-			// accepts )+, )-, )*, )/, )), .+, .-, .*, ./, .)
+			// accepts )+, )-, )*, )/, )), .+, .-, .*, ./, .), )^, .^
 			// refuses for example )( or .L
 			switch (expression[i + 1]) {
-			case '+': case '-': case '*': case '/': case ')':
+			case '+': case '-': case '*': case '/': case '^': case ')':
 				break;
 			default:
 				if (!is_a_digit(expression[i + 1]))
@@ -184,7 +184,7 @@ bool is_valid(const string& expression) noexcept
 // calculates an expression and returns the result
 double calculate(const double& first, const double& second, const char& op) 
 // calculates an expression and returns the result
-// supports only the operators +, -, /, and *
+// supports only the operators +, -, /, * and ^
 // throws a division by zero exception when detected
 {
 	switch (op) {
@@ -198,6 +198,8 @@ double calculate(const double& first, const double& second, const char& op)
 		if (second == 0)
 			throw runtime_error("division by zero.");
 		return first / second;
+	case '^':
+		return pow(first, second);
 	default:
 		throw runtime_error("unsupported operator.");
 	}
@@ -255,7 +257,7 @@ string compute_expression(string expression)
 // returns the result as a string
 {
 	// declare a vector containing all operators.
-	vector<char> operators = { '/', '*', '-', '+' };
+	vector<char> operators = { '/', '*', '-', '+', '^' };
 
 	// for each operator op in operators
 	// determines the left and right operands and calculates "left op right"
@@ -303,7 +305,7 @@ string compute_expression(string expression)
 					// checks cases such as 3*-2 or -2 
 					if (j - 1 >= 0)
 						switch (expression[j - 1]) {
-						case '/': case '*': case '+': case '-':
+						case '/': case '*': case '+': case '-': case '^':
 							left.insert(left.begin(), expression[j--]);
 							break;
 						default:
