@@ -151,6 +151,10 @@ bool is_valid(const string& expression) noexcept
 			// refuses for example *) or *L
 			if (expression[i + 1] == '(');
 			else if (expression[i + 1] == '.');
+			else if ((expression[i + 1] == '+' || expression[i + 1] == '-') && expression[i] == 'e');
+			else if ((expression[i + 1] == '+' || expression[i + 1] == '-') && expression[i] == '^');
+			else if ((expression[i + 1] == '+' || expression[i + 1] == '-') && expression[i] == '*');
+			else if ((expression[i + 1] == '+' || expression[i + 1] == '-') && expression[i] == '/');
 			else
 				if (!is_a_digit(expression[i + 1]))
 					return false;
@@ -311,15 +315,15 @@ string compute_expression(string expression)
 
 			int j = op_idx + 1;
 			// here j>=0 is used as a condition here so we can't break the following loop in case '-'
-			while (j >= 0 && (is_a_digit(expression[j]) || expression[j] == '.' || expression[j] == '(' || expression[j] == ')' || expression[j] == '-'))
+			while (j >= 0 && (is_a_digit(expression[j]) || expression[j] == '.' || expression[j] == '(' || expression[j] == ')' || expression[j] == '-' || expression[j] == '+'))
 				switch (expression[j]) {
 				case '(':
 					right.push_back(expression[j++]);
 					while (!check_parentheses(right))
 						right.push_back(expression[j++]);
 					break;
-				case '-':
-					// check cases such as 2*-8
+				case '-': case '+':
+					// checks cases such as 2^-8 or 2e-8 
 					if (j == op_idx + 1)
 						right.push_back(expression[j++]); // test
 					else
