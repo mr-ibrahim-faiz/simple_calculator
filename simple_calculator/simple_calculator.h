@@ -21,6 +21,12 @@ bool is_valid(const string&) noexcept;
 // calculates an expression and returns the result
 double calculate(const double&, const double&, const char&);
 
+// checks assertion c >=-1 && c <=255
+int passes_assertion(int);
+
+// checks assertion c >=-1 && c <=255 for each character of a string expression
+int passes_assertion(const string&);
+
 // clears expression
 void clear_expression(string&) noexcept;
 

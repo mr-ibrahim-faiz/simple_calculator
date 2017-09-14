@@ -40,15 +40,18 @@ try
 					string computation_unit = parse_expression(expression);
 
 					// retrieves the index where the computation unit was found
-					size_t cu_idx = expression.find(computation_unit);
+					size_t cu_idx = expression.find('(' + computation_unit);
+					++cu_idx;
+
+					// gets the length of the computation unit including parentheses
 					size_t length = computation_unit.length() + 2;
 
+					// computes the computation unit
 					string computed_expression = compute_expression(computation_unit);
 
 					// delete the computation unit from the main expression and replace it by its result
 					expression.erase(cu_idx - 1, length);
 					expression.insert(cu_idx - 1, computed_expression);
-
 				}
 
 				// displays final result

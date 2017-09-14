@@ -32,16 +32,23 @@ bool check_parentheses(const string& expression) noexcept
 // returns true if nothing is wrong with the parentheses
 // i.e odd number of parentheses, unclosed parentheses
 {
-	int result { 0 };
+	// validation variable
+	// it must never be less than 0
+	int validation { 0 };
 	for (size_t i = 0; i < expression.size(); ++i) {
 		if (expression[i] == '(')
-			++result;
+			++validation;
 		else if (expression[i] == ')')
-			--result;
+			--validation;
 		else {}
+
+		// validation
+		if (validation < 0)
+			return false;
 	}
 
-	if (result == 0)
+	// validation
+	if (validation == 0)
 		return true;
 
 	return false;
@@ -55,7 +62,7 @@ size_t count_operators(const string& expression) noexcept
 	size_t result { 0 };
 	for (size_t i = 0; i < expression.size(); ++i) {
 		switch (expression[i]) {
-		case '+': case '-': case '/': case '*': case '^':
+		case '+': case '-': case '/': case '*': case 'e': case '^':
 			++result;
 			break;
 		default:
@@ -139,8 +146,8 @@ bool is_valid(const string& expression) noexcept
 
 		// returns false if two caracters which are not allowed to follow each other follow each others
 		switch (expression[i]) {
-		case '*': case '/': case '+': case '-': case '^':
-			// accepts *(, /(, +(, -(, *., /., +., -., ^(, ^.
+		case '*': case '/': case '+': case '-': case 'e': case '^':
+			// accepts *(, /(, +(, -(, *., /., +., -., ^(, ^., e(, e.
 			// refuses for example *) or *L
 			if (expression[i + 1] == '(');
 			else if (expression[i + 1] == '.');
@@ -160,10 +167,10 @@ bool is_valid(const string& expression) noexcept
 			break;
 
 		case ')': case '.':
-			// accepts )+, )-, )*, )/, )), .+, .-, .*, ./, .), )^, .^
+			// accepts )+, )-, )*, )/, )), .+, .-, .*, ./, .), )^, .^, )e, .e
 			// refuses for example )( or .L
 			switch (expression[i + 1]) {
-			case '+': case '-': case '*': case '/': case '^': case ')':
+			case '+': case '-': case '*': case '/': case '^': case ')': case 'e':
 				break;
 			default:
 				if (!is_a_digit(expression[i + 1]))
@@ -184,7 +191,7 @@ bool is_valid(const string& expression) noexcept
 // calculates an expression and returns the result
 double calculate(const double& first, const double& second, const char& op) 
 // calculates an expression and returns the result
-// supports only the operators +, -, /, * and ^
+// supports only the operators +, -, /, *, e and ^
 // throws a division by zero exception when detected
 {
 	switch (op) {
@@ -198,11 +205,39 @@ double calculate(const double& first, const double& second, const char& op)
 		if (second == 0)
 			throw runtime_error("division by zero.");
 		return first / second;
+	case 'e':
+		// TODO: check first and second before computing first*pow(10, second)
+		return first*pow(10, second);
 	case '^':
+		// TODO: check first and second before computing pow(first, second)
 		return pow(first, second);
 	default:
 		throw runtime_error("unsupported operator.");
 	}
+}
+
+// checks assertion c >=-1 && c <=255
+int passes_assertion(int c) 
+// checks if the assertion c >=-1 && c <=255 is true for a specified character
+// returns 1 (true) if it is the case
+// returns 0 (false) otherwise
+{
+	if (c >= -1 && c <= 255)
+		return 1;
+	else
+		return 0;
+}
+
+// checks assertion c >=-1 && c <=255 for each character of a string expression
+int passes_assertion(const string& expression)
+// checks if the assertion c >=-1 && c <=255 is true each character of a string expression
+// returns 1 (true) if it is the case
+// returns 0 (false) otherwise
+{
+	for (char c : expression)
+		if (!passes_assertion(c))
+			return 0;
+	return 1;
 }
 
 // clears expression
@@ -210,7 +245,11 @@ void clear_expression(string& expression) noexcept
 // clears expression passed as argument by removing whitespaces, changing 'x' to '*' and ':' unto '/'
 {
 	// remove whitespaces from expression
-	expression.erase(remove_if(expression.begin(), expression.end(), isspace), expression.end());
+	// checks assertion c >=-1 && c <=255 before using isspace
+	if (passes_assertion(expression))
+		expression.erase(remove_if(expression.begin(), expression.end(), isspace), expression.end());
+	else
+		expression = "";
 
 	// replace ':', 'x' by '/' and '*'
 	for (size_t i = 0; i < expression.size(); ++i) {
@@ -257,7 +296,7 @@ string compute_expression(string expression)
 // returns the result as a string
 {
 	// declare a vector containing all operators.
-	vector<char> operators = { '/', '*', '-', '+', '^' };
+	vector<char> operators = { 'e', '^', '/', '*', '-', '+' };
 
 	// for each operator op in operators
 	// determines the left and right operands and calculates "left op right"
@@ -305,7 +344,7 @@ string compute_expression(string expression)
 					// checks cases such as 3*-2 or -2 
 					if (j - 1 >= 0)
 						switch (expression[j - 1]) {
-						case '/': case '*': case '+': case '-': case '^':
+						case '/': case '*': case '+': case '-': case '^': case 'e':
 							left.insert(left.begin(), expression[j--]);
 							break;
 						default:
