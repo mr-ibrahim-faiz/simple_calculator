@@ -151,10 +151,10 @@ bool is_valid(const string& expression) noexcept
 			// refuses for example *) or *L
 			if (expression[i + 1] == '(');
 			else if (expression[i + 1] == '.');
-			else if ((expression[i + 1] == '+' || expression[i + 1] == '-') && expression[i] == 'e');
-			else if ((expression[i + 1] == '+' || expression[i + 1] == '-') && expression[i] == '^');
-			else if ((expression[i + 1] == '+' || expression[i + 1] == '-') && expression[i] == '*');
-			else if ((expression[i + 1] == '+' || expression[i + 1] == '-') && expression[i] == '/');
+			else if (is_unary_plus_or_minus(expression[i + 1]) && expression[i] == 'e'); // TODO: combine all those
+			else if (is_unary_plus_or_minus(expression[i + 1]) && expression[i] == '^');
+			else if (is_unary_plus_or_minus(expression[i + 1]) && expression[i] == '*');
+			else if (is_unary_plus_or_minus(expression[i + 1]) && expression[i] == '/');
 			else
 				if (!is_a_digit(expression[i + 1]))
 					return false;
@@ -190,6 +190,30 @@ bool is_valid(const string& expression) noexcept
 	}
 
 	return true;
+}
+
+// checks if a char is a valid unary operator + or -
+bool is_unary_plus_or_minus(const char& c) noexcept
+// checks if the argument is the representation of a valid unary operator +, or -
+// returns true if it is the case
+{
+	switch (c)
+	{
+	case '+': case '-':
+		return true;
+	default:
+		return false;
+	}
+}
+
+// checks if a character is allowed in an operand
+bool is_allowed_in_operand(const char& c) noexcept
+// checks if the character passed as argument is allowed in an operand
+// returns true if it is the case
+{
+	if (is_a_digit(c) || is_unary_plus_or_minus(c) || c == '.')
+		return true;
+	return false;
 }
 
 // calculates an expression and returns the result
@@ -288,9 +312,9 @@ string parse_expression(const string& expression) noexcept
 				parsed_expression.push_back(expression[idx]);
 			++idx;
 		}
+		return parsed_expression;
 	}
-
-	return parsed_expression;
+	return expression;
 }
 
 // computes expression
@@ -301,6 +325,8 @@ string compute_expression(string expression)
 {
 	// declare a vector containing all operators.
 	vector<char> operators = { 'e', '^', '/', '*', '-', '+' };
+
+	// TODO: case '^'
 
 	// for each operator op in operators
 	// determines the left and right operands and calculates "left op right"
@@ -314,18 +340,14 @@ string compute_expression(string expression)
 			string right { "" };
 
 			int j = op_idx + 1;
-			// here j>=0 is used as a condition here so we can't break the following loop in case '-'
-			while (j >= 0 && (is_a_digit(expression[j]) || expression[j] == '.' || expression[j] == '(' || expression[j] == ')' || expression[j] == '-' || expression[j] == '+'))
+			// j>=0 is used as a condition here so we can't break the loop if needed
+			// TODO: create function is_allowed in number
+			while (j >= 0 && is_allowed_in_operand(expression[j]))
 				switch (expression[j]) {
-				case '(':
-					right.push_back(expression[j++]);
-					while (!check_parentheses(right))
-						right.push_back(expression[j++]);
-					break;
 				case '-': case '+':
 					// checks cases such as 2^-8 or 2e-8 
 					if (j == op_idx + 1)
-						right.push_back(expression[j++]); // test
+						right.push_back(expression[j++]);
 					else
 						j = -1;
 					break;
@@ -335,20 +357,14 @@ string compute_expression(string expression)
 				}
 
 			j = op_idx - 1;
-			while (j >= 0 && (is_a_digit(expression[j]) || expression[j] == '.' || expression[j] == '(' || expression[j] == ')' || expression[j] == '-'))
+			while (j >= 0 && is_allowed_in_operand(expression[j]))
 			{
 				switch (expression[j]) {
-				case ')':
-					left.insert(left.begin(), expression[j--]);
-					while (!check_parentheses(left))
-						if (j >= 0)
-							left.insert(left.begin(), expression[j--]);
-					break;
-				case '-':
+				case '-': case '+':
 					// checks cases such as 3*-2 or -2 
-					if (j - 1 >= 0)
+					if (j > 0)
 						switch (expression[j - 1]) {
-						case '/': case '*': case '+': case '-': case '^': case 'e':
+						case '/': case '*': case '^': case 'e':
 							left.insert(left.begin(), expression[j--]);
 							break;
 						default:
