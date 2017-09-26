@@ -21,9 +21,15 @@
     <ClCompile Include="simple_calculator.cpp">
       <Filter>Resource Files</Filter>
     </ClCompile>
+    <ClCompile Include="token.cpp">
+      <Filter>Resource Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="simple_calculator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="token.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
