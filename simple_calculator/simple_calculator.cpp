@@ -1,251 +1,173 @@
 #include "simple_calculator.h"
 
+#include<iostream>
+using std::cin;
+using std::streamsize;
+
+#include<sstream>
+using std::stringstream;
+
 #include<stdexcept>
 using std::runtime_error;
+using std::out_of_range;
 
 #include<algorithm>
 using std::remove_if;
 
-#include<vector>
-using std::vector;
+#include<limits>
+using std::numeric_limits;
 
-#include<string>
-using std::to_string;
+#include<iomanip>
+using std::setprecision;
 
-// counts parentheses
-size_t count_parentheses(const string& expression) noexcept
-// counts the number of parentheses found in an expression
-// returns the number of parentheses
+// checks if a char is a valid operator
+bool is_an_operator(const char& c) noexcept
+// checks if the character argument is the representation of a valid operator +, -, *, / or ^
+// returns true if it is the case
 {
-	size_t result { 0 };
-	for (size_t i = 0; i < expression.size(); ++i) {
-		if (expression[i] == '(' || expression[i] == ')')
-			++result;
-		else {}
-	}
+	switch (c)
+	{
+	case '+': case '-': case '*': case '/': case '^':
+		return true;
 
-	return result;
+	default:
+		return false;
+	}
 }
 
-// checks parentheses
-bool check_parentheses(const string& expression) noexcept
-// returns true if nothing is wrong with the parentheses
-// i.e odd number of parentheses, unclosed parentheses
+// checks if a token is a valid operator
+bool is_an_operator(const Token& token) noexcept 
+// checks if the token argument is of type operators
+// returns true if it is the case
 {
-	// validation variable
-	// it must never be less than 0
-	int validation { 0 };
-	for (size_t i = 0; i < expression.size(); ++i) {
-		if (expression[i] == '(')
-			++validation;
-		else if (expression[i] == ')')
-			--validation;
-		else {}
-
-		// validation
-		if (validation < 0)
-			return false;
-	}
-
-	// validation
-	if (validation == 0)
+	if (token.type() == Token::Token_type::operators)
 		return true;
 
 	return false;
 }
 
-// counts operators
-size_t count_operators(const string& expression) noexcept
-// counts the number of operators found in an expression
-// returns the number of operators
-{
-	size_t result { 0 };
-	for (size_t i = 0; i < expression.size(); ++i) {
-		switch (expression[i]) {
-		case '+': case '-': case '/': case '*': case 'e': case '^':
-			++result;
-			break;
-		default:
-			break;
-		}
-	}
-	return result;
-}
-
-// checks if a char is a representation of a digit
-bool is_a_digit(const char& c) noexcept
-// checks if the argument is the representation of a digit [0, 10)
-// returns true if the argument is the representation of a digit
+// checks if a char is a parenthesis
+bool is_a_parenthesis(const char& c) noexcept
+// checks if the character argument is a parenthesis ( or )
+// returns true if it is the case
 {
 	switch (c)
 	{
-	case '0': case '1': case '2': case '3': case '4': case '5':
-	case '6': case '7': case '8': case '9':
+	case '(': case ')':
 		return true;
+
 	default:
 		return false;
 	}
 }
 
-// checks if an expression is valid
-bool is_valid(const string& expression) noexcept
-// checks if an expression is valid by using a set of rules
-// i.e. number of parentheses, invalid characters, etc
-// returns true if everything is fine according to these rules
+// checks if a token is a parenthesis
+bool is_a_parenthesis(const Token& token) noexcept
+// checks if the token argument is of type parentheses
+// returns true if it is the case
 {
-	// length of the expression
-	size_t length = expression.size();
+	if (token.type() == Token::Token_type::parentheses)
+		return true;
 
-	// returns false if there's something wrong with the parentheses
-	if (!check_parentheses(expression))
+	return false;
+}
+
+// checks if a token is a number
+bool is_a_number(const Token& token) noexcept
+// checks if the token argument is of type numbers
+// returns true if it is the case
+{
+	if (token.type() == Token::Token_type::numbers)
+		return true;
+
+	return false;
+}
+
+// checks if a token is valid
+bool is_valid(const Token& token) noexcept 
+// checks if the token argument is valid
+// returns true if it is the case
+{
+	if (token.type() == Token::Token_type::invalid)
 		return false;
-
-	// returns false if the first character cannot be represented as a digit,
-	// exceptions: the first character can be '+', '-', '.' or '('
-	switch (expression[0])
-	{
-	case '+': case '-': case '(': case '.':
-		break;
-	default:
-		if (!is_a_digit(expression[0]))
-			return false;
-		break;
-	}
-
-	// returns false if the last character cannot be represented as a digit
-	// exceptions: the last character can be ')' or '.'
-	if (!is_a_digit(expression[length - 1])) {
-		switch (expression[length - 1]) {
-		case ')': case '.':
-			break;
-		default:
-			return false;
-		}
-	}
-
-	// returns false if two caracters are following each other
-	for (size_t i = 0; i < length - 1; ++i) {
-		// if the current character can be represented as a digit, it is ignored
-		if (is_a_digit(expression[i]))
-			continue;
-
-		// if an invalid float (such as .1.2.) is detected, it returns false
-		if (expression[i] == '.') {
-			size_t j = i + 1;
-			while (expression[j++]) {
-				// if the current character can be represented as a digit, it is ignored
-				if (is_a_digit(expression[j - 1]))
-					continue;
-				// returns false if a second '.' is found in an operand
-				else if (expression[j - 1] == '.')
-					return false;
-				else
-					break;
-			}
-		}
-
-		// returns false if two caracters which are not allowed to follow each other follow each others
-		switch (expression[i]) {
-		case '*': case '/': case '+': case '-': case 'e': case '^':
-			// accepts *(, /(, +(, -(, *., /., +., -., ^(, ^., e(, e.
-			// refuses for example *) or *L
-			if (expression[i + 1] == '(');
-			else if (expression[i + 1] == '.');
-			else if (is_unary_plus_or_minus(expression[i + 1]) && expression[i] == 'e'); // TODO: combine all those
-			else if (is_unary_plus_or_minus(expression[i + 1]) && expression[i] == '^');
-			else if (is_unary_plus_or_minus(expression[i + 1]) && expression[i] == '*');
-			else if (is_unary_plus_or_minus(expression[i + 1]) && expression[i] == '/');
-			else
-				if (!is_a_digit(expression[i + 1]))
-					return false;
-		case '(':
-			// accepts (+, (-, ((, (.
-			// refuses for example (* or (L
-			switch (expression[i + 1]) {
-			case '+': case '-': case '(': case '.':
-				break;
-			default:
-				if (!is_a_digit(expression[i + 1]))
-					return false;
-			}
-			break;
-
-		case ')': case '.':
-			// accepts )+, )-, )*, )/, )), .+, .-, .*, ./, .), )^, .^, )e, .e
-			// refuses for example )( or .L
-			switch (expression[i + 1]) {
-			case '+': case '-': case '*': case '/': case '^': case ')': case 'e':
-				break;
-			default:
-				if (!is_a_digit(expression[i + 1]))
-					return false;
-			}
-			break;
-
-		default:
-			// if the current character is not a valid character, returns false
-			return false;
-			break;
-		}
-	}
 
 	return true;
 }
 
-// checks if a char is a valid unary operator + or -
-bool is_unary_plus_or_minus(const char& c) noexcept
-// checks if the argument is the representation of a valid unary operator +, or -
+// checks if a token is a valid unary operator + or -
+bool is_unary_plus_or_minus(const Token& token) noexcept 
+// checks if the token argument is a valid unary operator + or -
 // returns true if it is the case
 {
-	switch (c)
-	{
-	case '+': case '-':
+	if (is_an_operator(token) && token.value() == 2)
 		return true;
-	default:
-		return false;
-	}
-}
 
-// checks if a character is allowed in an operand
-bool is_allowed_in_operand(const char& c) noexcept
-// checks if the character passed as argument is allowed in an operand
-// returns true if it is the case
-{
-	if (is_a_digit(c) || is_unary_plus_or_minus(c) || c == '.')
-		return true;
 	return false;
 }
 
-// calculates an expression and returns the result
-double calculate(const double& first, const double& second, const char& op) 
-// calculates an expression and returns the result
-// supports only the operators +, -, /, *, e and ^
-// throws a division by zero exception when detected
+// tokenizes string expression
+vector<Token> tokenize(const string& expression) 
+// tokenizes a string expression passed as argument
+// returns a vector of Token if the stringstream object is in a good state
+// throws an exception otherwise
 {
-	switch (op) {
-	case '+':
-		return first + second;
-	case '-':
-		return first - second;
-	case '*':
-		return first * second;
-	case '/':
-		if (second == 0)
-			throw runtime_error("division by zero.");
-		return first / second;
-	case 'e':
-		// TODO: check first and second before computing first*pow(10, second)
-		return first*pow(10, second);
-	case '^':
-		// TODO: check first and second before computing pow(first, second)
-		return pow(first, second);
-	default:
-		throw runtime_error("unsupported operator.");
+	string str = expression + '\n';
+	stringstream ss(str);
+
+	vector<Token> tokens;
+
+	// ignores whitespaces
+	while (isspace(ss.peek()) && ss.peek() != '\n') {
+		ss.ignore(1, ' ');
 	}
+
+	for (Token t; ss && ss.peek() != '\n';) {
+		ss >> t;
+		if (ss && is_valid(t))
+			tokens.push_back(t);
+
+		// ignores whitespaces
+		while (isspace(ss.peek()) && ss.peek() != '\n') {
+			ss.ignore(1, ' ');
+		}
+	}
+
+	if (!ss) {
+		ss.clear();
+		throw Bad_token("unable to parse expression.");
+	}
+
+	return tokens;
+}
+
+// checks if there are operators in a vector of tokens
+bool contains_operator(const vector<Token>& vec) noexcept 
+// checks if there is at least one operator in a vector of tokens
+// returns true if it is the case
+{
+	for (Token token : vec) {
+		if (is_an_operator(token))
+			return true;
+	}
+
+	return false;
+}
+
+// checks if there are parentheses in a vector of tokens
+bool contains_parenthesis(const vector<Token>& vec) noexcept
+// checks if there is at least one parenthesis in a vector of tokens
+// returns true if it is the case
+{
+	for (Token token : vec) {
+		if (is_a_parenthesis(token))
+			return true;
+	}
+
+	return false;
 }
 
 // checks assertion c >=-1 && c <=255
-int passes_assertion(int c) 
+int passes_assertion(int c)
 // checks if the assertion c >=-1 && c <=255 is true for a specified character
 // returns 1 (true) if it is the case
 // returns 0 (false) otherwise
@@ -258,19 +180,22 @@ int passes_assertion(int c)
 
 // checks assertion c >=-1 && c <=255 for each character of a string expression
 int passes_assertion(const string& expression)
-// checks if the assertion c >=-1 && c <=255 is true each character of a string expression
+// checks if the assertion c >=-1 && c <=255 is true for each character of a string expression
 // returns 1 (true) if it is the case
 // returns 0 (false) otherwise
 {
 	for (char c : expression)
 		if (!passes_assertion(c))
 			return 0;
+
 	return 1;
 }
 
-// clears expression
+// clears string expression
 void clear_expression(string& expression) noexcept
-// clears expression passed as argument by removing whitespaces, changing 'x' to '*' and ':' unto '/'
+// clears a string expression passed as argument by :
+// - removing whitespaces
+// - changing 'x' to '*' and ':' unto '/'
 {
 	// remove whitespaces from expression
 	// checks assertion c >=-1 && c <=255 before using isspace
@@ -285,129 +210,375 @@ void clear_expression(string& expression) noexcept
 		case 'x':
 			expression[i] = '*';
 			break;
+
 		case ':':
 			expression[i] = '/';
 			break;
+
 		default:
 			break;
 		}
 	}
 }
 
-// returns the part of the expression that must be computed first
-string parse_expression(const string& expression) noexcept
-// parse the expression by analyzing the parentheses and returns the part of the
-// expression that must be computed first
-// if there's no parentheses, the argument expression is returned as is
+// clears expression
+void clear_expression(vector<Token>& tokens) noexcept 
+// clears a vector of token expression passed as argument by
+// - removing unnecessary unary operators
+// - signing numbers
+// e.g. {(, -, 1,)} becomes {(, -1, )}
 {
-	string parsed_expression{ "" };
-	size_t idx = expression.find("(");
+	// gets size of the vector
+	size_t size = tokens.size();
 
-	if (idx != string::npos) {
-		++idx;
-		while (expression[idx] != ')') {
-			if (expression[idx] == '(')
-				parsed_expression = "";
-			else
-				parsed_expression.push_back(expression[idx]);
-			++idx;
+	for (size_t i = 0; i < size; ++i) {
+		// searches for unary operators + or -
+		if (is_unary_plus_or_minus(tokens[i]) && (i == 0 
+			|| (is_an_operator(tokens[i - 1]) && tokens[i - 1].value() != 2)
+			|| (is_a_parenthesis(tokens[i - 1]) && tokens[i - 1].value() == 1))) {
+
+			if (i + 1 < size && is_a_number(tokens[i + 1]))
+				switch (tokens[i].name()[0]) {
+				case '-':
+					// removes the unary operator token from the vector
+					tokens.erase(tokens.begin() + i);
+
+					// changes the sign of the token
+					tokens[i].negative();
+
+					break;
+
+				default:
+					// removes the unary operator token from the vector
+					tokens.erase(tokens.begin() + i);
+
+					break;
+				}
 		}
-		return parsed_expression;
+
+		// refreshes the value of size
+		size = tokens.size();
 	}
+}
+  
+// checks parentheses
+bool check_parentheses(const vector<Token>& tokens) noexcept
+// checks parentheses in a vector of tokens
+// returns true if nothing is wrong with the parentheses
+// i.e odd number of parentheses, unclosed parentheses, etc
+{
+	// validation variable
+	// it must never be less than 0
+	int validation { 0 };
+	for (Token t: tokens) {
+		if (is_a_parenthesis(t) && t.value() == 1)
+			++validation;
+		else if (is_a_parenthesis(t) && t.value() == -1)
+			--validation;
+		else {}
+
+		// validation
+		if (validation < 0)
+			return false;
+	}
+
+	// validation
+	if (validation != 0)
+		return false;
+
+	return true;
+}
+
+// checks if an expression is valid
+bool is_valid(const vector<Token>& tokens) noexcept 
+// checks if an expression (represented by a vector of Token) is valid (i.e. can be computed) by using a set of rules
+// returns true if it is the case
+{
+	// rule #0.1: the expression can not be empty
+	if (tokens.empty())
+		return false;
+
+	// rule #0.2: the expression must contain valid tokens
+	for (Token t : tokens) {
+		if (!is_valid(t))
+			return false;
+	}
+
+	// gets size of the vector tokens
+	size_t size = tokens.size();
+
+	// rule #1: the first token must be a number, an unary operator (+, -) or the parenthesis (
+	if (!is_a_number(tokens[0]) &&
+		(!is_an_operator(tokens[0]) || tokens[0].value() != 2) &&
+		(!is_a_parenthesis(tokens[0]) || tokens[0].value() != 1))
+		return false;
+
+	// rule #2: the last token must be a number or the parenthesis )
+	if (!is_a_number(tokens[size - 1]) &&
+		(!is_a_parenthesis(tokens[size - 1]) || tokens[size - 1].value() != -1))
+		return false;
+
+	// rule #3: must pass the parentheses check
+	if (!check_parentheses(tokens))
+		return false;
+
+	// rule #4: must pass the valid arithmetic expression check
+	for (size_t i = 0; i < size; ++i) {
+		switch (tokens[i].type()) {
+		case Token::Token_type::numbers:
+			if (i + 1 < size)
+				switch (tokens[i + 1].type()) {
+				case Token::Token_type::numbers:
+					return false;
+
+				case Token::Token_type::parentheses:
+					if (tokens[i + 1].value() == 1)
+						return false;
+					break;
+
+				default:
+					break;
+				}
+			break;
+
+		case Token::Token_type::operators:
+			if (i + 1 < size)
+				switch (tokens[i + 1].type()) {
+				case Token::Token_type::operators: 
+					if(tokens[i].value() == 2 || tokens[i + 1].value() != 2)
+						return false; // except *+, *-, /+, /-, ^+ and ^-
+					break;
+
+				case Token::Token_type::parentheses:
+					if (tokens[i + 1].value() == -1)
+						return false; // when +), -), *), /) and ^)
+					break;
+					
+				default:
+					break;
+				}
+			break;
+
+		case Token::Token_type::parentheses:
+			if (tokens[i].value() == 1) {
+				if (i + 1 < size)
+					switch (tokens[i + 1].type()) {
+					case Token::Token_type::operators:
+						if(tokens[i + 1].value() != 2)
+							return false; // when (*, (/ and (^
+						break;
+
+					case Token::Token_type::parentheses:
+						if (tokens[i + 1].value() != 1)
+							return false; // when ()
+						break;
+
+					default:
+						break;
+					}
+			}
+			else {
+				if (i + 1 < size)
+					switch (tokens[i + 1].type()) {
+					case Token::Token_type::numbers:
+						return false; // e.g. when )0
+
+					case Token::Token_type::parentheses:
+						if (tokens[i + 1].value() != -1)
+							return false; // when )(
+						break;
+
+					default:
+						break;
+					}
+			}
+			break;
+
+		default:
+			break;
+
+		}
+	}
+
+	return true;
+}
+
+// converts double value to string
+string to_string(const double& val) 
+// converts a double value to a string value
+// returns a string with the representation of the double val
+{
+	stringstream ss;
+	ss << setprecision(numeric_limits<double>::digits10) << val;
+	return ss.str();
+}
+
+// finds token in vector of tokens
+size_t find_first_of(Token::Token_type token_type, int token_value, vector<Token>& vec, size_t pos)
+// searches the vector for the first occurrence of the token specified by its arguments
+// returns the index of the first match
+// if no matches were found, the function returns -1
+// throws an out_of_range exception when pos is out of range
+{
+	if (pos >= vec.size())
+		throw out_of_range("position out of range.");
+
+	for (size_t i = pos; i < vec.size(); ++i)
+		if (vec[i].type() == token_type && vec[i].value() == token_value)
+			return i;
+
+	return -1;
+}
+
+// finds token in vector of tokens
+size_t find_last_of(Token::Token_type token_type, int token_value, vector<Token>& vec, size_t pos)
+// searches the vector for the last occurrence of the token specified by its arguments
+// returns the index of the first match
+// if no matches were found, the function returns -1
+// throws an out_of_range exception when pos is out of the range
+{
+	if (pos >= vec.size())
+		throw out_of_range("position out of range.");
+
+	for (size_t i = pos; i < vec.size(); --i)
+		if (vec[i].type() == token_type && vec[i].value() == token_value)
+			return i;
+
+	return -1;
+}
+
+// calculates an expression and returns the result
+Token calculate(const Token& left, const Token& right, const Token& op) 
+// calculates an expression and returns the result
+// supports only the operators +, -, /, * and ^
+// left and right must be tokens of type numbers
+// op must be of type operators
+// throws a division by zero exception when detected
+{
+	// checks arguments
+	if (!is_a_number(left) || !is_a_number(right) || !is_an_operator(op))
+		throw Bad_token("unable to calculate expression.");
+
+	// switches on op
+	switch (op.name()[0]) {
+	case '+':
+		return left + right;
+
+	case '-':
+		return left - right;
+
+	case '*':
+		return left * right;
+
+	case '/':
+		if (right.value() == 0)
+			throw Bad_token("division by zero.");
+		return left / right;
+
+	case '^':
+		if ((left.value() < 0 && (right.value() != int(right.value())))
+			|| (left.value() == 0 && right.value() == 0)
+			|| (left.value() == 0 && right.value() < 0))
+			throw Bad_token("domain error.");
+		return left^right;
+
+	default:
+		throw Bad_token("unsupported operator.");
+	}
+}
+
+// parses expression
+vector<Token> parse_expression(const vector<Token>& expression, vector<size_t>& parentheses_indexes)
+// parses the expression (represented as a vector of Token)
+// returns the part of the expression that must be computed first
+{
+	// checks expression
+	if (expression.empty() || !is_valid(expression))
+		throw Bad_token("unable to parse expression.");
+
+	// keeps track of the parentheses position
+	parentheses_indexes = vector<size_t>(2);
+
+	// expression result
+	vector<Token> result;
+
+	for (size_t i = 0; i < expression.size(); ++i) {
+		switch (expression[i].type()) {
+		case Token::Token_type::parentheses:
+			if (expression[i].value() == 1) {
+				// gets index of the left parenthesis
+				parentheses_indexes[0] = i;
+
+				// empties expression result
+				result = vector<Token>();
+			}
+			else if (expression[i].value() == -1) {
+				// gets index of the right parenthesis
+				parentheses_indexes[1] = i;
+
+				// returns the expression result
+				return result;
+			}
+
+			break;
+
+		default:
+			// pushes the token into the expression result
+			result.push_back(expression[i]);
+
+			break;
+		}
+	}
+
+	// returns expression
 	return expression;
 }
 
 // computes expression
-string compute_expression(string expression) 
-// computes the expression passed as argument, 
-// parses and calcultates expression
-// returns the result as a string
+Token compute_expression(vector<Token>& expression) 
+// parses and calculates expression the expression (represented as a vector of Token)
+// returns the result as a Token number
 {
-	// declare a vector containing all operators.
-	vector<char> operators = { 'e', '^', '/', '*', '-', '+' };
+	// clears expression
+	clear_expression(expression);
 
-	// TODO: case '^'
+	// checks if the expression is valid
+	if (expression.empty() || !is_valid(expression))
+		throw Bad_token("unable to compute expression.");
 
-	// for each operator op in operators
-	// determines the left and right operands and calculates "left op right"
-	for (char op : operators) {
-		// retrieves the index where the operator was found
-		size_t op_idx = expression.find(op);
+	// gets size of the vector
+	size_t size = expression.size();
 
-		while (op_idx != string::npos) {
-			string computation_unit { op };
-			string left { "" };
-			string right { "" };
+	if (contains_operator(expression)) {
+		// sets operator precedence
+		size_t precedence = 4;
 
-			int j = op_idx + 1;
-			// j>=0 is used as a condition here so we can't break the loop if needed
-			// TODO: create function is_allowed in number
-			while (j >= 0 && is_allowed_in_operand(expression[j]))
-				switch (expression[j]) {
-				case '-': case '+':
-					// checks cases such as 2^-8 or 2e-8 
-					if (j == op_idx + 1)
-						right.push_back(expression[j++]);
-					else
-						j = -1;
-					break;
-				default:
-					right.push_back(expression[j++]);
-					break;
-				}
-
-			j = op_idx - 1;
-			while (j >= 0 && is_allowed_in_operand(expression[j]))
-			{
-				switch (expression[j]) {
-				case '-': case '+':
-					// checks cases such as 3*-2 or -2 
-					if (j > 0)
-						switch (expression[j - 1]) {
-						case '/': case '*': case '^': case 'e':
-							left.insert(left.begin(), expression[j--]);
-							break;
-						default:
-							j = -1;
-							break;
-						}
-					else
-						left.insert(left.begin(), expression[j--]);
-					break;
-				default:
-					left.insert(left.begin(), expression[j--]);
-					break;
-				}
-			}
-
-			// converts strings to float and calculate the result
-			double dright = atof(right.c_str());
-			double dleft = atof(left.c_str());
-			double result = calculate(dleft, dright, op);
-
-			computation_unit += right;
-			left += computation_unit;
-			computation_unit = left;
-
-			// retrieves the index where the computation unit was found
-			size_t cu_idx = expression.find(computation_unit);
-
-			// saves the last expression to avoid loops with cases such as -1-2
-			string last_expression = expression;
-
-			// delete the computation unit from the main expression and replace it by its result
-			expression.erase(cu_idx, computation_unit.length());
-			expression.insert(cu_idx, to_string(result));
-
-			// retrieves the index where the operator was found
-			// to avoid loop, last_expression is compared to expression
-			if (last_expression == expression)
-				op_idx = expression.find(op, op_idx + 1);
+		while (size > 1 && precedence >= 2) {
+			// gets the index of the operator of precedence precedence
+			// note: right-associativity is used for operator ^
+			int index;
+			if (precedence == 4)
+				index = find_last_of(Token::Token_type::operators, precedence, expression, size - 1);
 			else
-				op_idx = expression.find(op);
+				index = find_first_of(Token::Token_type::operators, precedence, expression);
 
+			if (index != -1) {
+				// calculates a part of the expression, removes operands and pushes the result into the expression
+				expression[index - 1] = calculate(expression[index - 1], expression[index + 1], expression[index]);
+				expression.erase(expression.begin() + index, expression.begin() + index + 2);
+
+				// refreshes expression size
+				size = expression.size();
+			}
+			else
+				--precedence;
 		}
 	}
 
-	return expression;
+	// returns the only token in the expression
+	if (size == 1 && is_a_number(expression[0]))
+		return expression[0];
+	else
+		throw Bad_token("unable to compute expression.");
+
 }
