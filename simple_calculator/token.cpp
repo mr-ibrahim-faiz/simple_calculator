@@ -1,214 +1,151 @@
 #include "token.h"
+#include "ofuse.h"
 #include "simple_calculator.h"
+
+#include<stdexcept>
+using std::runtime_error;
+
+#include<iostream>
+using std::ios;
 
 // default constructor
 Token::Token() noexcept
-	: ttype(Token::Token_type::invalid)
+	: ttype(token_type::invalid)
 	, tname("")
 	, tvalue(0) {}
 
-// numbers constructor
-Token::Token(double value)
-	: ttype(Token::Token_type::numbers)
-	, tvalue(value)
-	, tname(to_string(value)) {}
+// constructor creating a token of type number
+Token::Token(double value) noexcept
+	: ttype(token_type::numbers)
+	, tname(to_string(value))
+	, tvalue(value) {}
 
-// parentheses and operators constructor
-Token::Token(char c) 
-	: ttype(Token::Token_type::invalid)
+// constructor creating a token of type parentheses or operators
+Token::Token(char c) noexcept
+	: ttype(token_type::invalid)
 	, tname("")
 	, tvalue(0)
 {
-	switch (c) {
-	// deals with operators +, -, /, * and ^
-	case '+': case '-': case '*': case '/': case '^':
-		ttype = Token::Token_type::operators;
-		tname = c;
-
-		// sets operator precedence
-		switch (c) {
-		case '+': case '-':
-			tvalue = 2;
-			break;
-
-		case '/': case '*':
-			tvalue = 3;
-			break;
-
-		default:
-			tvalue = 4;
-			break;
-		}
-
+	ttype = get_type(c);
+	switch (ttype) {
+	case token_type::numbers:
+		tname = string(1, c);
+		tvalue = to_int(c);
 		break;
 
-	// deals with parentheses
-	case '(': case ')':
-		ttype = Token::Token_type::parentheses;
-		tname = c;
+	case token_type::operators:
+		tname = string(1, c);
+		tvalue = get_precedence(c);
+		break;
 
-		// sets parenthesis value
-		if (c == '(')
-			tvalue = 1;
-		else
-			tvalue = -1;
+	case token_type::parentheses:
+		tname = string(1, c);
+		tvalue = get_parenthesis_value(c);
+		break;
 
+	default:
 		break;
 	}
 }
 
-// copy constructor
-Token::Token(const Token& other) noexcept {
-	*this = other;
-}
-
-// copy assignment operator
-Token& Token::operator=(const Token& right) noexcept {
-	if (this != &right) {
-		ttype = right.ttype;
-		tname = right.tname;
-		tvalue = right.tvalue;
-	}
-	return *this;
-}
-
-// move constructor
-Token::Token(Token&& other) noexcept 
-	: ttype(Token::Token_type::invalid)
-	, tname("")
-	, tvalue(0)
-{
-	*this = move(other);
-}
-
-// move assignment operator
-Token& Token::operator=(Token&& right) noexcept {
-	if (this != &right) {
-		ttype = move(right.ttype);
-		tname = move(right.tname);
-		tvalue = move(right.tvalue);
-
-		right.ttype = Token::Token_type::invalid;
-		right.tname = "";
-		right.tvalue = 0;
-	}
-	return *this;
-}
-
-// retrieves the type of the token
-Token::Token_type Token::type() const noexcept {
+// retrives type of the token
+Token::token_type Token::Type() const noexcept {
 	return ttype;
 }
 
-// retrieves the name of the token
-string Token::name() const noexcept {
+// retrieves name of a token
+string Token::Name() const noexcept {
 	return tname;
 }
 
-// retrieves the value of the token
-double Token::value() const noexcept {
+// retrives value of a token
+double Token::Value() const noexcept {
 	return tvalue;
 }
 
-// changes the sign of a token
-void Token::negative() noexcept 
-// changes the sign of a token
-// only affects tokens of type numbers
+// gets type of a character
+Token::token_type Token::get_type(const char& c) noexcept 
+// analyzes a char c and returns its type
+// returns a value of type Token::token_type
 {
-	if (ttype == Token::Token_type::numbers) {
-		if (tvalue > 0)
-			tname.insert(tname.begin(), '-');
-		else if (tvalue < 0)
-			tname = tname.substr(1);
-		tvalue *= -1;
+	if (is_a_digit(c) || c == '.')
+		return token_type::numbers;
+	else if (is_an_operator(c))
+		return token_type::operators;
+	else if (is_a_parenthesis(c))
+		return token_type::parentheses;
+	else
+		return token_type::invalid;
+}
+
+// gets operator precedence
+unsigned int Token::get_precedence(const char& c) 
+// returns the precedence of an operator c
+// throws an exception if the char c is not the representation of an operator
+{
+	switch (c) {
+	case '+': case '-':
+		return 2;
+	case '*': case '/':
+		return 3;
+	default:
+		throw runtime_error("invalid operator.");
 	}
 }
 
-// overloading operator>>
-istream& operator>>(istream& is, Token& token) {
-	// searches for a valid operator +, -, *, / or ^
-	char first { '?' };
-	is >> first;
-
-	// checks if the stream is in a good state before moving on
-	if (!is)
-		return is;
-
-	// deals with operators (+, -, /, * and ^) and parentheses ( and )
-	if (is_an_operator(first) || is_a_parenthesis(first))
-		// creates a token of type operators or parentheses
-		token = Token(first);
-	// deals with operators (+, -, /, * and ^) and parentheses ( and )
-	else {
-		// puts character back into the stream
-		is.putback(first); // similar to is.unget()
-
-		// checks if the stream is in a good state before moving on
-		if (!is)
-			return is;
-
-		// gets token value
-		is >> token.tvalue;
-
-		// checks if the stream is in a good state before moving on
-		if (!is)
-			return is;
-
-		// creates a token of type numbers
-		token = Token(token.tvalue);
+// gets parethensis value
+int Token::get_parenthesis_value(const char& c) 
+// returns the value of a parenthesis
+// i.e. -1 for ( and +1 for )
+// throws an exception if the char c is not the representation of a parenthesis
+{
+	switch (c) {
+	case '(':
+		return -1;
+	case ')':
+		return 1;
+	default:
+		throw runtime_error("not a parenthesis.");
 	}
-
-	return is;
 }
 
 // overloading operator<<
 ostream& operator<<(ostream& os, const Token& token) {
+	//os << token.tname << '\n' << setprecision(numeric_limits<double>::digits10) << token.tvalue; // debug
 	os << token.tname;
 	return os;
 }
 
-// overloading operator+
-Token operator+(const Token& left, const Token& right) {
-	if (is_a_number(left) && is_a_number(right)) {
-		return Token(left.tvalue + right.tvalue);
-	}
-	return Token();
-}
+// overloading operator>>
+istream& operator>>(istream& is, Token& token) {
+	char first{ '?' }; // first character
+	is >> first;
+	if (!is)
+		return is;
 
-// overloading operator-
-Token operator-(const Token& left, const Token& right) {
-	if (is_a_number(left) && is_a_number(right)) {
-		return Token(left.tvalue - right.tvalue);
-	}
-	return Token();
-}
+	Token::token_type type = Token::get_type(first);
 
-// overloading operator*
-Token operator*(const Token& left, const Token& right) {
-	if (is_a_number(left) && is_a_number(right)) {
-		return Token(left.tvalue * right.tvalue);
-	}
-	return Token();
-}
+	switch (type) {
+	case Token::token_type::operators: case Token::token_type::parentheses:
+		token = Token(first);
+		break;
 
-// overloading operator/
-Token operator/(const Token& left, const Token& right) {
-	if (is_a_number(left) && is_a_number(right)) {
-		if (right.tvalue == 0)
-			throw Bad_token("division by zero.");
-		return Token(left.tvalue / right.tvalue);
+	case Token::token_type::numbers:
+	{
+		is.unget();
+		double value{ 0.0 };
+		is >> value;
+		if (!is)
+			return is;
+		token = Token(value);
 	}
-	return Token();
-}
+	break;
 
-// overloading operator^
-Token operator^(const Token& left, const Token& right) {
-	if (is_a_number(left) && is_a_number(right)) {
-		if((left.tvalue < 0 && (right.tvalue != int(right.tvalue)))
-			|| (left.tvalue == 0 && right.tvalue == 0)
-			|| (left.tvalue == 0 && right.tvalue < 0))
-			throw Bad_token("domain error.");
-		return Token(pow(left.tvalue, right.tvalue));
+	default:
+		token = Token();
+		is.setstate(ios::failbit);
+		break;
 	}
-	return Token();
+
+	return is;
 }

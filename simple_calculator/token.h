@@ -1,85 +1,55 @@
 #pragma once
 
 #include<iostream>
-using std::move;
 using std::istream;
 using std::ostream;
-
-#include<stdexcept>
-using std::runtime_error;
 
 #include<string>
 using std::string;
 
-// defines the type Bad_token
-class Bad_token : public runtime_error {
-	using runtime_error::runtime_error;
-};
-
-// defines the type Token
+// defined-type Token
 class Token {
 public:
-	// defines the types of token available
-	enum class Token_type {
-		invalid, operators, numbers, parentheses
+	// defines different kinds of token
+	enum class token_type {
+		invalid, numbers, operators, parentheses
 	};
 
 	// default constructor
 	explicit Token() noexcept;
 
-	// numbers constructor
-	explicit Token(double);
+	// constructor creating a token of type number
+	explicit Token(double) noexcept;
 
-	// parentheses and operators constructor
-	explicit Token(char);
+	// constructor creating a token of type parentheses or operators
+	explicit Token(char) noexcept;
 
-	// copy constructor
-	Token(const Token&) noexcept;
+	// retrives type of the token
+	Token::token_type Type() const noexcept;
 
-	// copy assignment operator
-	Token& operator=(const Token&) noexcept;
+	// retrieves name of a token
+	string Name() const noexcept;
 
-	// move constructor
-	Token(Token&&) noexcept;
-
-	// move assignment operator
-	Token& operator=(Token&&) noexcept;
-
-	// retrieves the type of the token
-	Token_type type() const noexcept;
-
-	// retrieves the name of the token
-	string name() const noexcept;
-
-	// retrieves the value of the token
-	double value() const noexcept;
-
-	// changes the sign of a token
-	void negative() noexcept;
+	// retrives value of a token
+	double Value() const noexcept;
 
 private:
-	Token_type ttype; // type of the token
+	token_type ttype; // type of the token
 	string tname; // name of the token
 	double tvalue; // value of the token
 
-	// overloading operator>>
-	friend istream& operator>>(istream&, Token&);
+	// gets type of a character
+	static token_type get_type(const char&) noexcept;
+
+	// gets operator precedence
+	unsigned int get_precedence(const char&);
+
+	// gets parethensis value
+	int get_parenthesis_value(const char&);
 
 	// overloading operator<<
 	friend ostream& operator<<(ostream&, const Token&);
 
-	// overloading operator+
-	friend Token operator+(const Token&, const Token&);
-
-	// overloading operator-
-	friend Token operator-(const Token&, const Token&);
-
-	// overloading operator*
-	friend Token operator*(const Token&, const Token&);
-
-	// overloading operator/
-	friend Token operator/(const Token&, const Token&);
-
-	// overloading operator^
-	friend Token operator^(const Token&, const Token&);
+	// overloading operator>>
+	friend istream& operator>>(istream&, Token&);
 };
