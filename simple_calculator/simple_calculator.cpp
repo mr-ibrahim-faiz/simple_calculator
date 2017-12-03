@@ -177,7 +177,12 @@ Token term() {
 			break;
 
 		case '/':
-			left = Token(left.Value() / primary().Value());
+		{
+			Token divisor = primary();
+			if(divisor.Value() == 0.0)
+				throw runtime_error("division by zero.");
+			left = Token(left.Value() / divisor.Value());
+		}			
 			break;
 
 		default:
