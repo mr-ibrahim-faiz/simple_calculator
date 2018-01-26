@@ -56,6 +56,24 @@ bool is_valid(const Token& token) noexcept
 	return false;
 }
 
+// checks if the user wants to exit the program
+bool is_exit()
+// checks the user's input
+// returns true if the user enters "exit"
+// returns false otherwise
+{
+	string sstream{ "" };
+	getline(cin, sstream);
+	if (sstream == "exit")
+		return true;
+	else {
+		cin.putback('\n');
+		for (int i = sstream.size() - 1; i >= 0; --i)
+			cin.putback(sstream[i]);
+		return false;
+	}
+}
+
 // tokenizes an expression
 vector<Token> tokenize() 
 // tokenizes an expression from input

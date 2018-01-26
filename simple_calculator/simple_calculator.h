@@ -17,6 +17,9 @@ bool is_an_operator(const char&) noexcept;
 // checks if a token is valid
 bool is_valid(const Token&) noexcept;
 
+// checks if the user wants to exit the program
+bool is_exit();
+
 // tokenizes an expression
 vector<Token> tokenize();
 

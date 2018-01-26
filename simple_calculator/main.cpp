@@ -19,9 +19,16 @@ int main() {
 	while (true) {
 		cout << "> ";
 		Token result;
+
 		try {
+			// checks if the user wants to exit the program
+			if (is_exit())
+				break;
+
+			// gets and computes expression
 			result = expression();
 
+			// displays result
 			if (is_valid(result) && (cin.peek() == '\n'))
 				cout << result << endl;
 			else
@@ -38,6 +45,8 @@ int main() {
 
 		cout << endl;
 	}
+
+	cout << "\nGoodbye !" << endl;
 
 	return 0;
 }
