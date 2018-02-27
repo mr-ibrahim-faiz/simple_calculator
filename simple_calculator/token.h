@@ -1,55 +1,133 @@
 #pragma once
 
-#include<iostream>
-using std::istream;
-using std::ostream;
-
 #include<string>
 using std::string;
 
-// defined-type Token
+#include<iostream>
+using std::ostream;
+using std::istream;
+
+#include<stdexcept>
+using std::runtime_error;
+
+// user-defined type Bad_token
+class Bad_token : public runtime_error {
+	using runtime_error::runtime_error;
+};
+
+// user-defined type Token
 class Token {
 public:
-	// defines different kinds of token
-	enum class token_type {
+	// type of a token
+	enum class Token_kind {
 		invalid, numbers, operators, parentheses
 	};
 
 	// default constructor
-	explicit Token() noexcept;
+	Token() noexcept;
 
-	// constructor creating a token of type number
+	// constructor taking value as argument
+	// makes a Token from a double value
 	explicit Token(double) noexcept;
 
-	// constructor creating a token of type parentheses or operators
+	// constructor taking character as argument
+	// makes a Token from a char value
 	explicit Token(char) noexcept;
 
-	// retrives type of the token
-	Token::token_type Type() const noexcept;
+	// retrives the type of the token
+	Token::Token_kind Type() const noexcept;
 
-	// retrieves name of a token
+	// retrieves the name of the token
 	string Name() const noexcept;
 
-	// retrives value of a token
+	// retrieves the value of the token
 	double Value() const noexcept;
 
+	// checks if a token is valid
+	bool is_valid() const noexcept;
+
+	// copy compound assignment operator+=
+	Token& operator+=(const Token&);
+
+	// move compound assignment operator+=
+	Token& operator+=(Token&&);
+
+	// copy compound assignment operator-=
+	Token& operator-=(const Token&);
+
+	// move compound assignment operator-=
+	Token& operator-=(Token&&);
+
+	// copy compound assignment operator*=
+	Token& operator*=(const Token&);
+
+	// move compound assignment operator*=
+	Token& operator*=(Token&&);
+
+	// copy compound assignment operator/=
+	Token& operator/=(const Token&);
+
+	// move compound assignment operator/=
+	Token& operator/=(Token&&);
+
 private:
-	token_type ttype; // type of the token
-	string tname; // name of the token
-	double tvalue; // value of the token
+	Token_kind tkind; // type of a token
+	string tname; // name of a token
+	double tvalue; // value of a token;
 
-	// gets type of a character
-	static token_type get_type(const char&) noexcept;
-
-	// gets operator precedence
-	unsigned int get_precedence(const char&);
-
-	// gets parethensis value
-	int get_parenthesis_value(const char&);
-
-	// overloading operator<<
+				   // overloading opeartor<<
 	friend ostream& operator<<(ostream&, const Token&);
 
 	// overloading operator>>
 	friend istream& operator>>(istream&, Token&);
+
+	// overloading copy operator+
+	friend Token operator+(const Token&, const Token&);
+
+	// overloading move operator+
+	friend Token operator+(Token&&, Token&&);
+
+	// overloading copy operator-
+	friend Token operator-(const Token&, const Token&);
+
+	// overloading move operator-
+	friend Token operator-(Token&&, Token&&);
+
+	// overloading copy operator*
+	friend Token operator*(const Token&, const Token&);
+
+	// overloading move operator*
+	friend Token operator*(Token&&, Token&&);
+
+	// overloading copy operator/
+	friend Token operator/(const Token&, const Token&);
+
+	// overloading move operator/
+	friend Token operator/(Token&&, Token&&);
+};
+
+// user-defined type Token_stream
+class Token_stream {
+public:
+	// default constructor
+	explicit Token_stream() noexcept;
+
+	// peeks next token
+	Token peek();
+
+	// retrieves buffer 
+	Token get();
+
+	// retrieves buffer state
+	bool full();
+
+	// puts token back
+	void putback(const Token&);
+
+	// clear the stream state
+	void clear();
+
+private:
+	bool is_full; // buffer state
+	Token buffer; // token buffer
 };

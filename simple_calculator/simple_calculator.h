@@ -2,38 +2,20 @@
 
 #include "token.h"
 
-#include<vector>
-using std::vector;
+// defines a token stream which provides get() and putback()
+extern Token_stream ts;
 
-// checks if a char is a digit
-bool is_a_digit(const char&) noexcept;
+// reads and evaluates an expression
+Token expression();
 
-// checks if a char is a parenthesis
-bool is_a_parenthesis(const char&) noexcept;
+// reads and evaluates a term
+Token term();
 
-// checks if a char is an operator
-bool is_an_operator(const char&) noexcept;
+// reads and evaluates a factorial
+Token factorial();
 
-// checks if a token is valid
-bool is_valid(const Token&) noexcept;
+// reads and evaluates a primary
+Token primary();
 
 // checks if the user wants to exit the program
 bool is_exit();
-
-// tokenizes an expression
-vector<Token> tokenize();
-
-// puts token back in the stream
-void putback_token(const Token&);
-
-// peeks next token
-bool peek_token(Token::token_type);
-
-// computes primary
-Token primary();
-
-// computes term
-Token term();
-
-// computes expression
-Token expression();

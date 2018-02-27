@@ -12,39 +12,37 @@ using std::numeric_limits;
 #include<stdexcept>
 using std::runtime_error;
 
-// converts a double into a string value
-string to_string(const double& val) 
-// converts a double val into a string value
-{
+// converts a double into a string
+string to_string(const double& d) {
 	stringstream ss;
-	ss << setprecision(numeric_limits<double>::digits10) << val;
+	ss << setprecision(numeric_limits<double>::digits10) << d;
 	return ss.str();
 }
 
-// converts a char into an int
-int to_int(const char& c) 
-// converts a char c into an int value
-// throws an exception if the conversion failed
+// tests if a number is a positive integer
+bool is_positive_integer(const double& d)
+// checks if a number d is a non-negative integer
+// returns true if it's the case
+
 {
-	stringstream ss;
-	ss << c;
-	int result { 0 };
-	ss >> result;
-	if (!ss)
-		throw runtime_error("unable to convert char to int.");
-	return result;
+	int i = int(d);
+	if (d != double(i) || d < 0)
+		return false;
+
+	return true;
 }
 
-// converts a string into a double
-double to_double(const string& s) 
-// converts a string s into a double.
-// throws an exception if the conversion failed
+// computes a factorial
+double factorial(const double& n)
+// computes the factorial n!
+// n is a non-negative integer
+// returns the product of all positive integers less than or equal to n
 {
-	stringstream ss;
-	ss << s;
-	double result{ 0.0 };
-	ss >> result;
-	if (!ss)
-		throw runtime_error("unable to convert char to double.");
-	return result;
+	if (!is_positive_integer(n))
+		throw runtime_error("expected non-negative integer argument.");
+
+	if (n > 1)
+		return n * factorial(n - 1);
+	else
+		return 1;
 }

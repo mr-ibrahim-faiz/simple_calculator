@@ -3,11 +3,11 @@
 #include<string>
 using std::string;
 
-// converts a double into a string value
+// converts a double into a string
 string to_string(const double&);
 
-// converts a char into an int
-int to_int(const char&);
+// tests if a number is a positive integer
+bool is_positive_integer(const double&);
 
-// converts a string into a double
-double to_double(const string&);
+// computes a factorial
+double factorial(const double&);
