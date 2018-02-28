@@ -111,9 +111,7 @@ Token primary()
 	while (isspace(cin.peek()) && cin.peek() != '\n')
 		cin.ignore(1);
 
-	Token left;
-
-	left = ts.get();
+	Token left = ts.get();
 
 	switch (left.Type()) {
 	case Token::Token_kind::parentheses: // handles '(' expression ')'
@@ -130,9 +128,7 @@ Token primary()
 		if (left.Type() != Token::Token_kind::numbers)
 			throw Bad_token("expression expected.");
 
-		Token right;
-
-		right = ts.get();
+		Token right = ts.get();
 
 		if (!(right.Type() == Token::Token_kind::parentheses && right.Value() == -parenthese_value))
 			throw Bad_token{ string("right parenthesis ") + ((parenthese_value == -1) ? ")" : "}") + string(" expected.") };
@@ -163,10 +159,8 @@ Token primary()
 	case Token::Token_kind::numbers:
 		break;
 
-
 	default:
 		throw Bad_token("invalid expression.");
-		break;
 	}
 
 	// removes whitespaces at the end of the primary
