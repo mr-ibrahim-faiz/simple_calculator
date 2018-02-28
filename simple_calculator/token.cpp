@@ -13,6 +13,9 @@ using std::ios;
 using std::move;
 using std::streamsize;
 
+#include<cmath>
+using std::fmod;
+
 // default constructor
 Token::Token() noexcept
 	: tkind(Token::Token_kind::invalid)
@@ -34,7 +37,7 @@ Token::Token(char c) noexcept
 	, tvalue(0)
 {
 	switch (c) {
-	case '/': case '*': case '+': case '-': case '!':
+	case '/': case '*': case '+': case '-': case '!': case '%':
 		tkind = Token::Token_kind::operators;
 		tname.push_back(c);
 
@@ -43,7 +46,7 @@ Token::Token(char c) noexcept
 			tvalue = 2; // sets operator precedence
 			break;
 
-		case '/': case '*':
+		case '/': case '*': case '%':
 			tvalue = 3; // sets operator precedence
 			break;
 
@@ -205,6 +208,30 @@ Token& Token::operator/=(Token&& right)
 	return *this;
 }
 
+// copy compound assignment operator%=
+Token& Token::operator%=(const Token& right)
+// calculates the remainder and assigns it to the first operand
+{
+	if (this->tkind == right.tkind && right.tkind == Token::Token_kind::numbers) {
+		*this = (*this) % right;
+	}
+	else
+		throw Bad_token("copy operator%=: expected numbers.");
+	return *this;
+}
+
+// move compound assignment operator%=
+Token& Token::operator%=(Token&& right)
+// calculates the remainder and assigns it to the first operand
+{
+	if (this->tkind == right.tkind && right.tkind == Token::Token_kind::numbers) {
+		*this = (*this) % move(right);
+	}
+	else
+		throw Bad_token("move operator%=: expected numbers.");
+	return *this;
+}
+
 // overloading opeartor<<
 ostream& operator<<(ostream& os, const Token& token)
 // insertion operator
@@ -237,7 +264,7 @@ istream& operator>>(istream& is, Token& token)
 	}
 	break;
 
-	case '+': case '-': case '*': case '/': case '(': case ')': case '{': case '}': case '!':
+	case '+': case '-': case '*': case '/': case '(': case ')': case '{': case '}': case '!': case '%':
 		token = Token(c);
 		break;
 
@@ -318,6 +345,28 @@ Token operator/(Token&& left, Token&& right) {
 	}
 	else
 		throw Bad_token("move operator/: expected numbers.");
+}
+
+// overloading copy operator%
+Token operator%(const Token& left, const Token& right) {
+	if (left.tkind == right.tkind && right.tkind == Token::Token_kind::numbers) {
+		if (right.tvalue == 0.0)
+			throw Bad_token("division by 0.");
+		return Token(fmod(left.tvalue, right.tvalue));
+	}
+	else
+		throw Bad_token("copy operator%: expected numbers.");
+}
+
+// overloading move operator%
+Token operator%(Token&& left, Token&& right) {
+	if (left.tkind == right.tkind && right.tkind == Token::Token_kind::numbers) {
+		if (right.tvalue == 0.0)
+			throw Bad_token("division by 0.");
+		return Token(fmod(move(left.tvalue), move(right.tvalue)));
+	}
+	else
+		throw Bad_token("move operator%: expected numbers.");
 }
 
 // default constructor

@@ -60,11 +60,15 @@ Token term()
 
 		switch (op.Name()[0]) {
 		case '/':
-			left /= factorial(); // evaluates primary and divides
+			left /= factorial(); // evaluates factorial and divides
 			break;
 
 		case '*':
-			left *= factorial(); // evaluates primary and multiplies
+			left *= factorial(); // evaluates factorial and multiplies
+			break;
+
+		case '%':
+			left %= factorial(); // evaluates factorial and calculates the remainder
 			break;
 
 		default:

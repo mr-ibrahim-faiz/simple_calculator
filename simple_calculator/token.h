@@ -70,6 +70,12 @@ public:
 	// move compound assignment operator/=
 	Token& operator/=(Token&&);
 
+	// copy compound assignment operator%=
+	Token& operator%=(const Token&);
+
+	// move compound assignment operator%=
+	Token& operator%=(Token&&);
+
 private:
 	Token_kind tkind; // type of a token
 	string tname; // name of a token
@@ -104,6 +110,12 @@ private:
 
 	// overloading move operator/
 	friend Token operator/(Token&&, Token&&);
+
+	// overloading copy operator%
+	friend Token operator%(const Token&, const Token&);
+
+	// overloading move operator%
+	friend Token operator%(Token&&, Token&&);
 };
 
 // user-defined type Token_stream
