@@ -21,27 +21,16 @@ Token_stream ts;
 int main()
 try
 {
+	const string prompt { "> " };
 	while (true) {
-		cout << "> ";
+		cout << prompt; // prompts the user to enter expression
 
 		// checks if the user wants to exit the program
 		if (is_exit())
 			break;
 
-		Token token;
-
 		try {
-			token = expression(); // gets and computes expression
-
-								  // verifies that the expression was fully computed
-								  // and that the result is valid before displaying it 
-			if (token.is_valid() && cin.peek() == '\n' && !ts.full())
-				cout << token << endl;
-			else
-				throw Bad_token("invalid expression.");
-
-			if (cin.peek() == '\n')
-				getchar(); // deals with the newline left in the input stream
+			calculate();
 		}
 		catch (Bad_token& e) {
 			cerr << "Error: " << e.what() << endl;

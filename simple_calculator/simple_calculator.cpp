@@ -2,6 +2,8 @@
 
 #include<iostream>
 using std::cin;
+using std::cout;
+using std::endl;
 using std::streamsize; // test
 
 #include<limits>
@@ -193,4 +195,23 @@ bool is_exit()
 			cin.putback(sstream[i]);
 	}
 	return false;
+}
+
+
+// evaluates an expression
+void calculate() 
+// main function
+// evaluates an expression
+{
+	Token token = expression(); // gets and computes expression
+
+	// verifies that the expression was fully computed
+	// and that the result is valid before displaying it 
+	if (token.is_valid() && cin.peek() == '\n' && !ts.full())
+		cout << token << endl;
+	else
+		throw Bad_token("invalid expression.");
+
+	if (cin.peek() == '\n')
+		getchar(); // deals with the newline left in the input stream
 }

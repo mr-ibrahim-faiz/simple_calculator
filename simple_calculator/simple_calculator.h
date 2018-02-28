@@ -19,3 +19,6 @@ Token primary();
 
 // checks if the user wants to exit the program
 bool is_exit();
+
+// evaluates an expression
+void calculate();
