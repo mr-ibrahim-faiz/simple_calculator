@@ -18,6 +18,10 @@ Token statement()
 // reads input for statements and evaluates it
 // returns a token which is the avaluated statement
 {
+	// removes whitespaces at the beginning of statement
+	while (isspace(cin.peek()) && cin.peek() != '\n')
+		cin.ignore(1);
+
 	Token token = ts.peek();
 	switch (token.Type()) {
 		case Token::Token_kind::symbolics:
