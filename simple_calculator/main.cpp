@@ -18,6 +18,9 @@ using std::exception;
 // defines a token stream which provides get() and putback()
 Token_stream ts;
 
+// defines a container for user-defined variables
+map<string, Token> variables;
+
 int main()
 try
 {
