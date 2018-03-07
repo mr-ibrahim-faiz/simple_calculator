@@ -20,7 +20,7 @@ class Token {
 public:
 	// type of a token
 	enum class Token_kind {
-		invalid, numbers, operators, parentheses, symbolics
+		invalid, numbers, operators, parentheses
 	};
 
 	// default constructor
@@ -33,10 +33,6 @@ public:
 	// constructor taking character as argument
 	// makes a Token from a char value
 	explicit Token(char) noexcept;
-
-	// constructor taking string as argument
-	// makes a Token from a string value
-	explicit Token(string) noexcept;
 
 	// retrives the type of the token
 	Token::Token_kind Type() const noexcept;

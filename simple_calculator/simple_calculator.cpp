@@ -1,5 +1,4 @@
 #include "simple_calculator.h"
-#include "ofuse.h"
 
 #include<iostream>
 using std::cin;
@@ -10,65 +9,7 @@ using std::streamsize; // test
 #include<limits>
 using std::numeric_limits;
 
-#include<utility>
-using std::pair;
-
-// reads and evaluates a statement
-Token statement() 
-// reads input for statements and evaluates it
-// returns a token which is the avaluated statement
-{
-	Token token = ts.peek();
-	switch (token.Type()) {
-		case Token::Token_kind::symbolics:
-			if (is_declared(token.Name()))
-				return expression();
-			else
-				return declaration();
-
-		default:
-			return expression();
-	}
-}
-
-// reads and evaluates a declaration
-Token declaration() 
-// reads input for declaration and evaluates it
-// declaration syntax : name '=' expression
-// returns a token which is the avaluated declaration
-{
-	Token name = ts.get();
-	if (name.Type() != Token::Token_kind::symbolics)
-		throw Bad_token("symbolic name expected.");
-
-	// removes whitespaces
-	while (isspace(cin.peek()) && cin.peek() != '\n')
-		cin.ignore(1);
-
-	Token token = ts.get();
-	if (!(token.Type() == Token::Token_kind::operators && token.Name() == "="))
-		throw Bad_token("assignment operator= expected.");
-
-	token = expression();
-
-	// saves the user-defined variable into memory
-	variables[name.Name()] = token;
-
-	return token;
-}
-
-// evaluates an asignment
-Token assignment(const string& name) 
-// gives a new value to the variable named name
-// name is a declared variable
-{
-	if (!is_declared(name))
-		throw Bad_token(name + " is not declared.");
-	Token token = expression();
-	variables[name] = token;
-
-	return token;
-}
+#include "ofuse.h"
 
 // reads and evaluates an expression
 Token expression()
@@ -179,15 +120,6 @@ Token primary()
 	Token left = ts.get();
 
 	switch (left.Type()) {
-	case Token::Token_kind::symbolics:
-		if (!(ts.peek().Type() == Token::Token_kind::operators && ts.peek().Name() == "="))
-			left = variables[left.Name()];
-		else {
-			ts.get();
-			left = assignment(left.Name());
-		}
-		break;
-
 	case Token::Token_kind::parentheses: // handles '(' expression ')'
 	{
 		if (!(left.Type() == Token::Token_kind::parentheses && (left.Value() == -1 || left.Value() == -2)))
@@ -265,24 +197,13 @@ bool is_exit()
 	return false;
 }
 
-// checks if a variable has been declared
-bool is_declared(string name) 
-// checks if a variable with the name name has been declared
-// returns true if it is the case
-// returns false otherwise
-{
-	Token token = variables[name];
-	if (token.is_valid())
-		return true;
-	return false;
-}
 
 // evaluates an expression
 void calculate() 
 // main function
 // evaluates an expression
 {
-	Token token = statement(); // gets and computes expression
+	Token token = expression(); // gets and computes expression
 
 	// verifies that the expression was fully computed
 	// and that the result is valid before displaying it 

@@ -37,7 +37,7 @@ Token::Token(char c) noexcept
 	, tvalue(0)
 {
 	switch (c) {
-	case '/': case '*': case '+': case '-': case '!': case '%': case '=':
+	case '/': case '*': case '+': case '-': case '!': case '%':
 		tkind = Token::Token_kind::operators;
 		tname.push_back(c);
 
@@ -54,9 +54,6 @@ Token::Token(char c) noexcept
 			tvalue = 4; // sets operator precedence
 			break;
 
-		case '=':
-			tvalue = 0; // sets operator precedence
-			break;
 		}
 		break;
 
@@ -86,13 +83,6 @@ Token::Token(char c) noexcept
 		break;
 	}
 }
-
-// constructor taking string as argument
-// makes a Token from a string value
-Token::Token(string name) noexcept
-	: tkind(Token::Token_kind::symbolics)
-	, tname(name)
-	, tvalue(0) {}
 
 // retrives the type of the token
 Token::Token_kind Token::Type() const noexcept {
@@ -274,27 +264,13 @@ istream& operator>>(istream& is, Token& token)
 	}
 	break;
 
-	case '+': case '-': case '*': case '/': case '(': case ')': case '{': case '}': case '!': case '%': case '=':
+	case '+': case '-': case '*': case '/': case '(': case ')': case '{': case '}': case '!': case '%':
 		token = Token(c);
 		break;
 
 	default:
-		// handles symbolics literals
-		if (isalpha(c)) {
-			string sstream { "" };
-			sstream.push_back(c);
-
-			while (is.get(c) && (isalpha(c) || isdigit(c)))
-				sstream.push_back(c);
-			is.putback(c);
-
-			if (is)
-				token = Token(sstream);
-		}
-		else {
-			is.putback(c);
-			is.setstate(ios::failbit);
-		}
+		is.putback(c); // puts character back into the input stream
+		is.setstate(ios::failbit);
 		break;
 	}
 
