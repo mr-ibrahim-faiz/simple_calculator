@@ -13,6 +13,9 @@ using std::numeric_limits;
 #include<utility>
 using std::pair;
 
+#include<vector>
+using std::vector;
+
 const string quit { "exit" };
 const string assignment_operator { "=" };
 const char end_statement { '\n' };
@@ -50,6 +53,9 @@ Token declaration()
 	if (name.Type() != Token::Token_kind::symbolics)
 		throw Bad_token("symbolic name expected.");
 
+	if (is_constant(name.Name()))
+		throw Bad_token(name.Name() + " is a constant and can't be redefined.");
+
 	// removes whitespaces
 	while (isspace(cin.peek()) && cin.peek() != end_statement)
 		cin.ignore(1);
@@ -80,6 +86,9 @@ Token assignment(const string& name)
 {
 	if (!is_declared(name))
 		throw Bad_token(name + " is not declared.");
+	else if (is_constant(name))
+		throw Bad_token(name + " is a constant and can't be redefined.");
+
 	Token token = expression();
 	variables[name] = token;
 
@@ -293,6 +302,19 @@ bool is_declared(const string& name)
 	Token token = variables[name];
 	if (token.is_valid())
 		return true;
+	return false;
+}
+
+// checks if a variable is a constant
+bool is_constant(const string& name)
+// checks if a variable with the name name is a constant
+// returns true if it is the case
+// returns false otherwise
+{
+	vector<string> constants = { "pi" };
+	for (string constant : constants)
+		if (constant == name)
+			return true;
 	return false;
 }
 

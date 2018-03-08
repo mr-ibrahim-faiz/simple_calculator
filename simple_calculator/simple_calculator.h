@@ -41,5 +41,8 @@ bool is_exit();
 // checks if a variable has been declared
 bool is_declared(const string&);
 
+// checks if a variable is a constant
+bool is_constant(const string&);
+
 // evaluates an expression
 void calculate();
