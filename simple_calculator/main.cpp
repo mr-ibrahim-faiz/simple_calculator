@@ -76,6 +76,7 @@ int main()
 try
 {
 	const string prompt { "> " };
+	initialize_variables();
 	while (true) {
 		cout << prompt; // prompts the user to enter expression
 

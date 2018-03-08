@@ -17,6 +17,9 @@ Token statement();
 // reads and evaluates a declaration
 Token declaration();
 
+// initializes variables
+void initialize_variables();
+
 // evaluates an assignment
 Token assignment(const string&);
 
@@ -36,7 +39,7 @@ Token primary();
 bool is_exit();
 
 // checks if a variable has been declared
-bool is_declared(string);
+bool is_declared(const string&);
 
 // evaluates an expression
 void calculate();

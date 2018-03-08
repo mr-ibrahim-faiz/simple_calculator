@@ -13,13 +13,18 @@ using std::numeric_limits;
 #include<utility>
 using std::pair;
 
+const string quit { "exit" };
+const string assignment_operator { "=" };
+const char end_statement { '\n' };
+
+
 // reads and evaluates a statement
 Token statement() 
 // reads input for statements and evaluates it
 // returns a token which is the avaluated statement
 {
 	// removes whitespaces at the beginning of statement
-	while (isspace(cin.peek()) && cin.peek() != '\n')
+	while (isspace(cin.peek()) && cin.peek() != end_statement)
 		cin.ignore(1);
 
 	Token token = ts.peek();
@@ -46,11 +51,11 @@ Token declaration()
 		throw Bad_token("symbolic name expected.");
 
 	// removes whitespaces
-	while (isspace(cin.peek()) && cin.peek() != '\n')
+	while (isspace(cin.peek()) && cin.peek() != end_statement)
 		cin.ignore(1);
 
 	Token token = ts.get();
-	if (!(token.Type() == Token::Token_kind::operators && token.Name() == "="))
+	if (!(token.Type() == Token::Token_kind::operators && token.Name() == assignment_operator))
 		throw Bad_token("assignment operator= expected.");
 
 	token = expression();
@@ -61,7 +66,14 @@ Token declaration()
 	return token;
 }
 
-// evaluates an asignment
+// initializes variables
+void initialize_variables() 
+// predefines variables
+{
+	variables["pi"] = Token(3.14159);
+}
+
+// evaluates an assignment
 Token assignment(const string& name) 
 // gives a new value to the variable named name
 // name is a declared variable
@@ -71,7 +83,7 @@ Token assignment(const string& name)
 	Token token = expression();
 	variables[name] = token;
 
-	if (!(token.is_valid() && cin.peek() == '\n' && !ts.full()))
+	if (!(token.is_valid() && cin.peek() == end_statement && !ts.full()))
 		throw Bad_token("invalid assignment.");
 
 	return token;
@@ -180,14 +192,14 @@ Token primary()
 // returns a token which is the evaluated primary
 {
 	// removes whitespaces at the beginning of the primary
-	while (isspace(cin.peek()) && cin.peek() != '\n')
+	while (isspace(cin.peek()) && cin.peek() != end_statement)
 		cin.ignore(1);
 
 	Token left = ts.get();
 
 	switch (left.Type()) {
 	case Token::Token_kind::symbolics:
-		if (!(ts.peek().Type() == Token::Token_kind::operators && ts.peek().Name() == "="))
+		if (!(ts.peek().Type() == Token::Token_kind::operators && ts.peek().Name() == assignment_operator))
 			left = variables[left.Name()];
 		else {
 			ts.get();
@@ -245,7 +257,7 @@ Token primary()
 	}
 
 	// removes whitespaces at the end of the primary
-	while (isspace(cin.peek()) && cin.peek() != '\n')
+	while (isspace(cin.peek()) && cin.peek() != end_statement)
 		cin.ignore(1);
 
 	if (left.Type() != Token::Token_kind::numbers)
@@ -262,10 +274,10 @@ bool is_exit()
 {
 	string sstream{ "" };
 	getline(cin, sstream);
-	if (sstream == "exit")
+	if (sstream == quit)
 		return true;
 	else {
-		cin.putback('\n');
+		cin.putback(end_statement);
 		for (int i = sstream.size() - 1; i >= 0; --i)
 			cin.putback(sstream[i]);
 	}
@@ -273,7 +285,7 @@ bool is_exit()
 }
 
 // checks if a variable has been declared
-bool is_declared(string name) 
+bool is_declared(const string& name) 
 // checks if a variable with the name name has been declared
 // returns true if it is the case
 // returns false otherwise
@@ -293,11 +305,11 @@ void calculate()
 
 	// verifies that the expression was fully computed
 	// and that the result is valid before displaying it 
-	if (token.is_valid() && cin.peek() == '\n' && !ts.full())
+	if (token.is_valid() && cin.peek() == end_statement && !ts.full())
 		cout << token << endl;
 	else
 		throw Bad_token("invalid expression.");
 
-	if (cin.peek() == '\n')
+	if (cin.peek() == end_statement)
 		getchar(); // deals with the newline left in the input stream
 }

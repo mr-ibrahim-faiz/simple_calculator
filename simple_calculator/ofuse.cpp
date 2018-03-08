@@ -23,7 +23,7 @@ string to_string(const double& d) {
 bool is_positive_integer(const double& d)
 // checks if a number d is a non-negative integer
 // returns true if it's the case
-
+// returns false otherwise
 {
 	int i = int(d);
 	if (d != double(i) || d < 0)

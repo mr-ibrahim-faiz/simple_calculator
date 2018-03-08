@@ -23,14 +23,14 @@ Token::Token() noexcept
 	, tvalue(0) {}
 
 // constructor taking value as argument
-// makes a Token from a double value
+// makes a number Token from a double value
 Token::Token(double value) noexcept
 	: tkind(Token::Token_kind::numbers)
 	, tname(to_string(value))
 	, tvalue(value) {}
 
 // constructor taking character as argument
-// makes a Token from a char value
+// makes an operator/parenthesis Token from a char value
 Token::Token(char c) noexcept
 	: tkind(Token::Token_kind::invalid)
 	, tname("")
@@ -88,7 +88,7 @@ Token::Token(char c) noexcept
 }
 
 // constructor taking string as argument
-// makes a Token from a string value
+// makes a symbolic Token from a string value
 Token::Token(string name) noexcept
 	: tkind(Token::Token_kind::symbolics)
 	, tname(name)
@@ -275,11 +275,12 @@ istream& operator>>(istream& is, Token& token)
 	break;
 
 	case '+': case '-': case '*': case '/': case '(': case ')': case '{': case '}': case '!': case '%': case '=':
-		token = Token(c);
+		if (is)
+			token = Token(c);
 		break;
 
 	default:
-		// handles symbolics literals
+		// handles symbolics
 		if (isalpha(c)) {
 			string sstream { "" };
 			sstream.push_back(c);
@@ -448,7 +449,7 @@ void Token_stream::putback(const Token& token)
 		throw Bad_token("putback: invalid token.");
 }
 
-// clear the stream state
+// clears the stream state
 void Token_stream::clear() {
 	is_full = false;
 	buffer = Token();
