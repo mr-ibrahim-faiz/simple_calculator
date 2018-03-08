@@ -71,6 +71,9 @@ Token assignment(const string& name)
 	Token token = expression();
 	variables[name] = token;
 
+	if (!(token.is_valid() && cin.peek() == '\n' && !ts.full()))
+		throw Bad_token("invalid assignment.");
+
 	return token;
 }
 

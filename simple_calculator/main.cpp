@@ -1,3 +1,54 @@
+/*
+	Simple Calculator
+
+	This program calculates the expression provided by the user.
+
+	The grammar for the input is the following:
+
+	Calculation:
+		Statement
+		Quit
+
+	Quit:
+		"exit"
+
+	Statement:
+		Declaration
+		Expression
+	
+	Assignment:
+		Name '=' Expression
+
+	Declaration:
+		Name '=' Expression
+
+	Expression:
+		Term
+		Expression '+' Term
+		Expression '-' Term
+	
+	Term:
+		Factorial
+		Term '/' Factorial
+		Term '*' Factorial
+		Term '%' Factorial
+
+	Factorial:
+		Primary
+		Primary '!'
+
+	Primary:
+		Number
+		Symbolics
+		Assignment
+		'(' Expression ')'
+		'-' Primary
+		'+' Primary
+	
+	Number:
+		floating-point-literal
+*/
+
 #include "token.h"
 #include "ofuse.h"
 #include "simple_calculator.h"
@@ -46,9 +97,7 @@ try
 			if (ts.full())
 				ts.clear();
 		}
-
 		cout << endl;
-
 	}
 
 	cout << "\nGoodbye !" << endl;
