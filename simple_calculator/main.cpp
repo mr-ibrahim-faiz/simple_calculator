@@ -37,6 +37,10 @@
 		Primary
 		Primary '!'
 
+	Function:
+		pow '(' Expression  ',' Expression ')'
+		sqrt '(' Expression ')'
+
 	Primary:
 		Number
 		Symbolics
@@ -44,6 +48,7 @@
 		'(' Expression ')'
 		'-' Primary
 		'+' Primary
+		Function
 	
 	Number:
 		floating-point-literal
@@ -72,11 +77,16 @@ Token_stream ts;
 // defines a container for user-defined variables
 map<string, Token> variables;
 
+// defines a container for user-defined functions
+map<string, Function> functions;
+
 int main()
 try
 {
 	const string prompt { "> " };
 	initialize_variables();
+	initialize_functions();
+
 	while (true) {
 		cout << prompt; // prompts the user to enter expression
 

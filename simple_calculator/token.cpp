@@ -81,6 +81,13 @@ Token::Token(char c) noexcept
 			tvalue = 2; // sets parenthesis value
 			break;
 		}
+		break;
+
+	case ',':
+		tkind = Token::Token_kind::punctuations;
+		tname.push_back(c);
+		tvalue = 0;
+		break;
 
 	default:
 		break;
@@ -274,7 +281,9 @@ istream& operator>>(istream& is, Token& token)
 	}
 	break;
 
-	case '+': case '-': case '*': case '/': case '(': case ')': case '{': case '}': case '!': case '%': case '=':
+	case '+': case '-': case '*': case '/': case '!': case '%': case '=':
+	case '(': case ')': case '{': case '}':
+	case ',':
 		if (is)
 			token = Token(c);
 		break;

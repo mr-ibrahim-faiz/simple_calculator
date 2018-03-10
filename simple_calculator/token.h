@@ -20,7 +20,7 @@ class Token {
 public:
 	// type of a token
 	enum class Token_kind {
-		invalid, numbers, operators, parentheses, symbolics
+		invalid, numbers, operators, parentheses, symbolics, punctuations
 	};
 
 	// default constructor

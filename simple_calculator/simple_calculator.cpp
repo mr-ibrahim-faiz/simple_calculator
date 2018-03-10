@@ -16,10 +16,14 @@ using std::pair;
 #include<vector>
 using std::vector;
 
+#include<cmath>
+using std::pow;
+using std::sqrt;
+using std::isfinite;
+
 const string quit { "exit" };
 const string assignment_operator { "=" };
 const char end_statement { '\n' };
-
 
 // reads and evaluates a statement
 Token statement() 
@@ -33,7 +37,7 @@ Token statement()
 	Token token = ts.peek();
 	switch (token.Type()) {
 		case Token::Token_kind::symbolics:
-			if (is_declared(token.Name()))
+			if (is_declared(token.Name()) || is_function(token.Name()))
 				return expression();
 			else
 				return declaration();
@@ -96,6 +100,99 @@ Token assignment(const string& name)
 		throw Bad_token("invalid assignment.");
 
 	return token;
+}
+
+// initializes available functions
+void initialize_functions() 
+// predefines function names
+{
+	functions["sqrt"] = squareroot;
+	functions["pow"] = power;
+}
+
+// reads and evaluates a function
+Token function()
+// reads input for function and evaluates it
+// returns a token which is the evaluated expression
+{
+	Token left = ts.get();
+	Function efunction = functions[left.Name()];
+	if (efunction == invalid)
+		throw Bad_token("(function) invalid function.");
+
+	Token token = ts.get();
+	switch (token.Type()) {
+	case Token::Token_kind::parentheses:
+	{
+		if (!(token.Value() == -1))
+			throw Bad_token("(function) left parenthesis '(' expected.");
+
+		switch (efunction) {
+		case squareroot:
+			left = squareroot_function(); 
+			break;
+
+		case power:
+			left = power_function();
+			break;
+
+		default:
+			throw Bad_token("(function) unknown function.");
+		}
+
+		Token right = ts.get();
+		if (!(right.Value() == 1))
+			throw Bad_token("(function) left parenthesis ')' expected.");
+	}
+	break;
+
+	default:
+		throw Bad_token("(function) left parenthesis '(' expected.");
+	}
+
+	return left;
+}
+
+// reads and evaluates a squareroot operation
+Token squareroot_function()
+// reads input for an expression
+// returns a token which is the squareroot of the expression
+{
+	// reads expression
+	Token left = expression();
+	if (left.Value() < 0)
+		throw Bad_token("(squareroot function) nonnegative real number expected.");
+
+	left = Token(sqrt(left.Value()));
+
+	return left;
+}
+
+// reads and evaluates a power operation
+Token power_function()
+// syntax a ',' b
+// reads input for two expressions a and b
+// returns a token which is a multiplication of a by itself b times
+{
+	// reads expression
+	Token left = expression();
+
+	Token comma = ts.get();
+	if (!(comma.Type() == Token::Token_kind::punctuations && comma.Name() == ","))
+		throw Bad_token("(power function) comma expected.");
+
+	Token right = expression();
+	if (right.Type() != Token::Token_kind::numbers)
+		throw Bad_token("(power function) power expected.");
+
+	double base { left.Value() };
+	double exponent { right.Value() };
+	if (isfinite(base) && base < 0.0 && isfinite(exponent) && !is_integer(exponent))
+		throw Bad_token("(power function) domain error. negative base and noninteger exponent.");
+
+	left = Token(pow(base, exponent));
+
+	return left;
 }
 
 // reads and evaluates an expression
@@ -208,12 +305,17 @@ Token primary()
 
 	switch (left.Type()) {
 	case Token::Token_kind::symbolics:
-		if (!(ts.peek().Type() == Token::Token_kind::operators && ts.peek().Name() == assignment_operator))
-			left = variables[left.Name()];
-		else {
-			ts.get();
-			left = assignment(left.Name());
+		if (is_function(left.Name())) {
+			ts.putback(left);
+			left = function(); // handles functions
 		}
+		else if (ts.peek().Type() == Token::Token_kind::operators && ts.peek().Name() == assignment_operator) {
+			ts.get(); // removes the assignment operator= from the stream
+			left = assignment(left.Name()); // handles assignments
+		}
+		else
+			left = variables[left.Name()]; // handles defined names
+		
 		break;
 
 	case Token::Token_kind::parentheses: // handles '(' expression ')'
@@ -287,8 +389,10 @@ bool is_exit()
 		return true;
 	else {
 		cin.putback(end_statement);
-		for (int i = sstream.size() - 1; i >= 0; --i)
-			cin.putback(sstream[i]);
+
+		if(!sstream.empty())
+			for (long long int i = sstream.size() - 1; i >= 0; --i)
+				cin.putback(sstream[(const unsigned int)i]);
 	}
 	return false;
 }
@@ -314,6 +418,19 @@ bool is_constant(const string& name)
 	vector<string> constants = { "pi" };
 	for (string constant : constants)
 		if (constant == name)
+			return true;
+	return false;
+}
+
+// checks if a function is available
+bool is_function(const string& name) 
+// checks if there is a function named name
+// returns true if it is the case
+// returns false other wise
+{
+	vector<string> functions = { "sqrt", "pow" };
+	for (string function : functions)
+		if (function == name)
 			return true;
 	return false;
 }

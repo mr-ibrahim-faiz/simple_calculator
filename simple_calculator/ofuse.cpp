@@ -19,14 +19,26 @@ string to_string(const double& d) {
 	return ss.str();
 }
 
+// tests if a number is an integer
+bool is_integer(const double& d)
+// checks if a number d is an integer
+// returns true if it's the case
+// returns false otherwise
+{
+	long long int i = long long int(d);
+	if (d != double(i))
+		return false;
+
+	return true;
+}
+
 // tests if a number is a positive integer
 bool is_positive_integer(const double& d)
 // checks if a number d is a non-negative integer
 // returns true if it's the case
 // returns false otherwise
 {
-	int i = int(d);
-	if (d != double(i) || d < 0)
+	if (is_integer(d) || d < 0)
 		return false;
 
 	return true;
