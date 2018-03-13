@@ -38,7 +38,7 @@ bool is_positive_integer(const double& d)
 // returns true if it's the case
 // returns false otherwise
 {
-	if (is_integer(d) || d < 0)
+	if (!is_integer(d) || d < 0)
 		return false;
 
 	return true;

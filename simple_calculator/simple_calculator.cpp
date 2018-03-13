@@ -80,7 +80,7 @@ Token declaration()
 void initialize_variables() 
 // predefines variables
 {
-	variables["pi"] = Token(3.14159);
+	variables["pi"] = Token(3.14159265359);
 }
 
 // evaluates an assignment
