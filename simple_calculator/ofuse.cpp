@@ -25,7 +25,7 @@ bool is_integer(const double& d)
 // returns true if it's the case
 // returns false otherwise
 {
-	long long int i = long long int(d);
+	long long int i = (long long int) d;
 	if (d != double(i))
 		return false;
 

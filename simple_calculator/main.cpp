@@ -22,6 +22,9 @@
 	Declaration:
 		Name '=' Expression
 
+	Name:
+		Literal that starts with a letter and contains letters and digits
+
 	Expression:
 		Term
 		Expression '+' Term
