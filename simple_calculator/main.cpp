@@ -23,7 +23,7 @@
 		Name '=' Expression
 
 	Name:
-		Literal that starts with a letter and contains letters and digits
+		Literal that starts with a letter and contains letters, digits and undersocres
 
 	Expression:
 		Term
@@ -96,8 +96,10 @@ try
 		// checks if the user wants to exit the program
 		if (is_exit())
 			break;
-
-		try {
+		else if (is_help())
+			display_help();
+		else
+			try {
 			calculate();
 		}
 		catch (Bad_token& e) {

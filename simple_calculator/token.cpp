@@ -294,7 +294,7 @@ istream& operator>>(istream& is, Token& token)
 			string sstream { "" };
 			sstream.push_back(c);
 
-			while (is.get(c) && (isalpha(c) || isdigit(c)))
+			while (is.get(c) && (isalpha(c) || isdigit(c) || c == '_'))
 				sstream.push_back(c);
 			is.putback(c);
 

@@ -58,6 +58,12 @@ Token primary();
 // checks if the user wants to exit the program
 bool is_exit();
 
+// checks if the user wants help
+bool is_help();
+
+// displays help
+void display_help();
+
 // checks if a variable has been declared
 bool is_declared(const string&);
 

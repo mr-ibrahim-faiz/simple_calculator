@@ -22,6 +22,7 @@ using std::sqrt;
 using std::isfinite;
 
 const string quit { "exit" };
+const string help { "help" };
 const string assignment_operator { "=" };
 const char end_statement { '\n' };
 
@@ -55,10 +56,10 @@ Token declaration()
 {
 	Token name = ts.get();
 	if (name.Type() != Token::Token_kind::symbolics)
-		throw Bad_token("symbolic name expected.");
+		throw Bad_token("(declaration) symbolic name expected.");
 
 	if (is_constant(name.Name()))
-		throw Bad_token(name.Name() + " is a constant and can't be redefined.");
+		throw Bad_token("(declaration) " + name.Name() + " is a constant and can't be redefined.");
 
 	// removes whitespaces
 	while (isspace(cin.peek()) && cin.peek() != end_statement)
@@ -66,7 +67,10 @@ Token declaration()
 
 	Token token = ts.get();
 	if (!(token.Type() == Token::Token_kind::operators && token.Name() == assignment_operator))
-		throw Bad_token("assignment operator= expected.");
+		throw Bad_token("(declaration) assignment operator= expected.");
+
+	if (name.Name() == quit || name.Name() == help)
+		throw Bad_token("(declaration) \"" + name.Name() + "\"" + " can't be used as a variable.");
 
 	token = expression();
 
@@ -89,15 +93,15 @@ Token assignment(const string& name)
 // name is a declared variable
 {
 	if (!is_declared(name))
-		throw Bad_token(name + " is not declared.");
+		throw Bad_token("(assignment) " + name + " is not declared.");
 	else if (is_constant(name))
-		throw Bad_token(name + " is a constant and can't be redefined.");
+		throw Bad_token("(assignment) " + name + " is a constant and can't be redefined.");
 
 	Token token = expression();
 	variables[name] = token;
 
 	if (!(token.is_valid() && cin.peek() == end_statement && !ts.full()))
-		throw Bad_token("invalid assignment.");
+		throw Bad_token("(assignment) invalid assignment.");
 
 	return token;
 }
@@ -397,6 +401,38 @@ bool is_exit()
 	return false;
 }
 
+// checks if the user wants help
+bool is_help()
+// checks the input
+// returns true if the user wants help
+// returns false otherwise
+{
+	string sstream { "" };
+	getline(cin, sstream);
+	if (sstream == help)
+		return true;
+	else {
+		cin.putback(end_statement);
+
+		if (!sstream.empty())
+			for (long long int i = sstream.size() - 1; i >= 0; --i)
+				cin.putback(sstream[(const unsigned int)i]);
+	}
+	return false;
+}
+
+// displays help
+void display_help() {
+	cout << "Enter an expression and press Enter. (Ex: 8.11*7)" << endl;
+	cout << "\nFunctions available:" << endl;
+	cout << "pow(base, exponent)" << "	power." << endl;
+	cout << "sqrt(n)" << "	square root." << endl;
+
+	cout << endl;
+	cout << help << "	Provides help." << endl;
+	cout << quit << "	Quits the program." << endl;
+}
+
 // checks if a variable has been declared
 bool is_declared(const string& name) 
 // checks if a variable with the name name has been declared
@@ -450,5 +486,5 @@ void calculate()
 		throw Bad_token("invalid expression.");
 
 	if (cin.peek() == end_statement)
-		getchar(); // deals with the newline left in the input stream
+		cin.ignore(1); // deals with the newline left in the input stream
 }
