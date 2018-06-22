@@ -294,7 +294,7 @@ istream& operator>>(istream& is, Token& token)
 			string sstream { "" };
 			sstream.push_back(c);
 
-			while (is.get(c) && (isalpha(c) || isdigit(c) || c == '_'))
+			while (is.get(c) && (isalnum(c) || c == '_'))
 				sstream.push_back(c);
 			is.putback(c);
 
@@ -426,6 +426,8 @@ Token Token_stream::get()
 // returns the buffer if its full
 // otherwise returns the next token in the input stream
 {
+	const char newline { '\n' };
+
 	if (is_full) {
 		is_full = false;
 		return buffer;
@@ -433,7 +435,7 @@ Token Token_stream::get()
 
 	Token token;
 
-	if (cin.peek() != '\n')
+	if (cin.peek() != newline)
 		cin >> token;
 
 	return token;

@@ -301,9 +301,8 @@ Token primary()
 // reads input for primary and evaluates it
 // returns a token which is the evaluated primary
 {
-	// removes whitespaces at the beginning of the primary
-	while (isspace(cin.peek()) && cin.peek() != end_statement)
-		cin.ignore(1);
+	// removes spaces at the beginning of the primary
+	while (isblank(cin.peek())) cin.ignore(1);
 
 	Token left = ts.get();
 
@@ -387,16 +386,19 @@ bool is_exit()
 // returns true if the user wants to exit
 // returns false otherwise
 {
-	string sstream{ "" };
-	getline(cin, sstream);
-	if (sstream == quit)
-		return true;
-	else {
-		cin.putback(end_statement);
+	const unsigned length{ 6 };
+	char input[length]{ "" };
 
-		if(!sstream.empty())
-			for (long long int i = sstream.size() - 1; i >= 0; --i)
-				cin.putback(sstream[(const unsigned int)i]);
+	cin.get(input, length, end_statement);
+
+	if (strcmp(input, quit.c_str()) == 0) {
+		getchar(); // deals with the newline
+		return true;
+	}
+	else {
+		int length = (int)strlen(input);
+		for (int i = length - 1; i >= 0; --i)
+			cin.putback(input[i]);
 	}
 	return false;
 }
@@ -407,16 +409,19 @@ bool is_help()
 // returns true if the user wants help
 // returns false otherwise
 {
-	string sstream { "" };
-	getline(cin, sstream);
-	if (sstream == help)
-		return true;
-	else {
-		cin.putback(end_statement);
+	const unsigned length{ 6 };
+	char input[length]{ "" };
 
-		if (!sstream.empty())
-			for (long long int i = sstream.size() - 1; i >= 0; --i)
-				cin.putback(sstream[(const unsigned int)i]);
+	cin.get(input, length, end_statement);
+
+	if (strcmp(input, help.c_str()) == 0) {
+		getchar(); // deals with the newline
+		return true;
+	}
+	else {
+		int length = (int) strlen(input);
+		for (int i = length - 1; i >= 0; --i)
+			cin.putback(input[i]);
 	}
 	return false;
 }
