@@ -339,7 +339,7 @@ string compute_expression(string expression)
 			string left { "" };
 			string right { "" };
 
-			int j = op_idx + 1;
+			int j = (int) op_idx + 1;
 			// j>=0 is used as a condition here so we can't break the loop if needed
 			// TODO: create function is_allowed in number
 			while (j >= 0 && is_allowed_in_operand(expression[j]))
@@ -356,7 +356,7 @@ string compute_expression(string expression)
 					break;
 				}
 
-			j = op_idx - 1;
+			j = (int) op_idx - 1;
 			while (j >= 0 && is_allowed_in_operand(expression[j]))
 			{
 				switch (expression[j]) {
